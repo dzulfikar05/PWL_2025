@@ -9,8 +9,10 @@ class Item extends Model // Class Item mewarisi dari class Model
 {
     use HasFactory; // Menggunakan HasFactory
 
-    protected $fillable = [ // Atribut yang dapat diisi
-        'name',
-        'description',
-    ];
+    protected $guarded = [];
+
+    // protected $fillable = [ // Atribut yang dapat diisi
+    //     'name',
+    //     'description',
+    // ];
 }
