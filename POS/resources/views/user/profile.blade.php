@@ -9,6 +9,8 @@
 </head>
 <body>
     <div class="container mt-5">
+        <a href="/" class="btn btn-primary mb-2">Home</a>
+
         <div class="card">
             <div class="card-header text-center">
                 <h2>Profil Pengguna</h2>

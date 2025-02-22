@@ -9,6 +9,8 @@
 </head>
 <body>
     <div class="container mt-5">
+        <a href="/" class="btn btn-primary">Home</a>
+
         <h1 class="display-4 mb-4 text-center">{{ $label }}</h1>
 
         <div class="table-responsive">
