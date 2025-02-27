@@ -13,15 +13,15 @@ class UserController extends Controller
     {
 
         /// tambah data user dengan Eloquent Model
-$data = [
-    'nama' => 'Pelanggan Pertama',
-];
+        $data = [
+            'nama' => 'Pelanggan Pertama',
+        ];
 
-    UserModel :: where('username', 'customer-1')->update($data); // update data user
+        UserModel::where('username', 'customer-1')->update($data); // update data user
 
-    // coba akses model UserModel
-    $user = UserModel :: all(); // ambil semua data dari tabel m_user
-    return view('user', ['data' => $user]);
+        // coba akses model UserModel
+        $user = UserModel::all(); // ambil semua data dari tabel m_user
+        return view('user', ['data' => $user]);
     }
 
     // ambil semua data dari tabel m_user
