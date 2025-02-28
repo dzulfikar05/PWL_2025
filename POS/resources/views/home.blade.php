@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="container mt-4 text-center">
-        <!-- Navigasi dengan Button -->
+        <!-- Navigasi  -->
         <div class="mb-3">
             <a href="/category/food-beverage" class="btn btn-secondary">Food & Beverage</a>
             <a href="/category/beauty-health" class="btn btn-secondary">Beauty & Health</a>

@@ -68,15 +68,13 @@ use Illuminate\Support\Facades\Route;
 //     //
 // })->name('profile');
 
-// Route::get(
-//     '/user/profile',
-//     [UserProfileController::class, 'show']
-// )->name('profile');
+// Definisikan route
+Route::get('/profile', [UserProfileController::class, 'show'])->name('profile');
 
-// // Generating URLs...
-// $url = route('profile');
+// Generate URL
+$url = route('profile');
 
-// // Generating Redirects...
+// Redirect ke route
 // return redirect()->route('profile');
 
 //.
