@@ -173,17 +173,17 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
+        $check = UserModel::find($id);
+        if (!$check) {
+            return redirect('/user')->with('error', 'Data user tidak ditemukan');
+        }
+
         try {
-            $user = UserModel::findOrFail($id); // Cari user, jika tidak ada langsung lempar error
-            $user->delete(); // Hapus user dari database
+            UserModel::destroy($id);
 
             return redirect('/user')->with('success', 'Data user berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika ada kendala foreign key constraint
             return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        } catch (\Exception $e) {
-            // Jika terjadi error lain
-            return redirect('/user')->with('error', 'Terjadi kesalahan saat menghapus data user');
         }
     }
 }

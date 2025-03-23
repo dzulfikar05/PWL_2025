@@ -179,17 +179,17 @@ class BarangController extends Controller
 
     public function destroy(string $id)
     {
+        $check = BarangModel::find($id);
+        if (!$check) {
+            return redirect('/barang')->with('error', 'Data barang tidak ditemukan');
+        }
+
         try {
-            $barang = BarangModel::findOrFail($id); // Cari barang, jika tidak ada langsung lempar error
-            $barang->delete(); // Hapus barang dari database
+            BarangModel::destroy($id);
 
             return redirect('/barang')->with('success', 'Data barang berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika ada kendala foreign key constraint
             return redirect('/barang')->with('error', 'Data barang gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        } catch (\Exception $e) {
-            // Jika terjadi error lain
-            return redirect('/barang')->with('error', 'Terjadi kesalahan saat menghapus data barang');
         }
     }
 }

@@ -144,17 +144,17 @@ class LevelController extends Controller
 
     public function destroy(string $id)
     {
+        $check = LevelModel::find($id);
+        if (!$check) {
+            return redirect('/level')->with('error', 'Data level tidak ditemukan');
+        }
+
         try {
-            $level = LevelModel::findOrFail($id);
-            $level->delete();
+            LevelModel::destroy($id);
 
             return redirect('/level')->with('success', 'Data level berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika ada kendala foreign key constraint
             return redirect('/level')->with('error', 'Data level gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        } catch (\Exception $e) {
-            // Jika terjadi error lain
-            return redirect('/level')->with('error', 'Terjadi kesalahan saat menghapus data level');
         }
     }
 }

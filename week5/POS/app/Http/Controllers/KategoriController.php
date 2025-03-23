@@ -145,17 +145,17 @@ class KategoriController extends Controller
 
     public function destroy(string $id)
     {
+        $check = KategoriModel::find($id);
+        if (!$check) {
+            return redirect('/kategori')->with('error', 'Data kategori tidak ditemukan');
+        }
+
         try {
-            $kategori = KategoriModel::findOrFail($id);
-            $kategori->delete();
+            KategoriModel::destroy($id);
 
             return redirect('/kategori')->with('success', 'Data kategori berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika ada kendala foreign key constraint
             return redirect('/kategori')->with('error', 'Data kategori gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        } catch (\Exception $e) {
-            // Jika terjadi error lain
-            return redirect('/kategori')->with('error', 'Terjadi kesalahan saat menghapus data kategori');
         }
     }
 }

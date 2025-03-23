@@ -157,17 +157,17 @@ class SupplierController extends Controller
 
     public function destroy(string $id)
     {
+        $check = SupplierModel::find($id);
+        if (!$check) {
+            return redirect('/supplier')->with('error', 'Data supplier tidak ditemukan');
+        }
+
         try {
-            $supplier = SupplierModel::findOrFail($id);
-            $supplier->delete();
+            SupplierModel::destroy($id);
 
             return redirect('/supplier')->with('success', 'Data supplier berhasil dihapus');
         } catch (\Illuminate\Database\QueryException $e) {
-            // Jika ada kendala foreign key constraint
             return redirect('/supplier')->with('error', 'Data supplier gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        } catch (\Exception $e) {
-            // Jika terjadi error lain
-            return redirect('/supplier')->with('error', 'Terjadi kesalahan saat menghapus data supplier');
         }
     }
 }
