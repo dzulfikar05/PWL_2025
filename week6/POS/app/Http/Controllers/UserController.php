@@ -60,45 +60,6 @@ class UserController extends Controller
     }
 
 
-    public function create_ajax()
-    {
-        $level = LevelModel::select('level_id', 'level_nama')->get();
-
-        return view('user.create_ajax')
-            ->with('level', $level);
-    }
-
-    public function store_ajax(Request $request)
-    {
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'level_id' => 'required|integer',
-                'username' => 'required|string|min:3|unique:m_user,username',
-                'nama' => 'required|string|max:100',
-                'password' => 'required|min:6'
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false, // response status, false: error/gagal, true: berhasil
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(), // pesan error validasi
-                ]);
-            }
-
-            UserModel::create($request->all());
-            return response()->json([
-                'status' => true,
-                'message' => 'Data user berhasil disimpan'
-            ]);
-        }
-
-        redirect('/');
-    }
-
-
     public function create()
     {
         $breadcrumb = (object) [
@@ -188,8 +149,91 @@ class UserController extends Controller
             'activeMenu' => $activeMenu
         ]);
     }
+    // Menyimpan perubahan data user
+    public function update(Request $request, string $id)
+    {
+        $request->validate([
+            // Username harus diisi, berupa string, minimal 3 karakter, dan bernilai unik
+            'username' => ['required', 'string', 'min:3', 'unique:m_user,username,' . $id . ',user_id'],
+            'nama' => 'required|string|max:100', // Nama harus diisi dan maksimal 100 karakter
+            'password' => 'nullable|min:5', // Password bisa diisi (minimal 5 karakter) dan bisa tidak diisi
+            'level_id' => 'required|integer' // Level_id harus diisi dan berupa angka
+        ]);
 
-    // Menampilkan halaman form edit user ajax
+        // Ambil data user berdasarkan ID
+        $user = UserModel::find($id);
+
+        // Jika password diisi, enkripsi, jika tidak, gunakan password lama
+        $password = $request->password ? bcrypt($request->password) : $user->password;
+
+        // Update data user
+        $user->update([
+            'username' => $request->username,
+            'nama' => $request->nama,
+            'password' => $password,
+            'level_id' => $request->level_id
+        ]);
+
+        return redirect('/user')->with('success', 'Data user berhasil diubah');
+    }
+
+    public function destroy(string $id)
+    {
+        $check = UserModel::find($id);
+        if (!$check) {
+            return redirect('/user')->with('error', 'Data user tidak ditemukan');
+        }
+
+        try {
+            UserModel::destroy($id);
+
+            return redirect('/user')->with('success', 'Data user berhasil dihapus');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
+        }
+    }
+
+
+
+    public function create_ajax()
+    {
+        $level = LevelModel::select('level_id', 'level_nama')->get();
+
+        return view('user.create_ajax')
+            ->with('level', $level);
+    }
+
+    public function store_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'level_id' => 'required|integer',
+                'username' => 'required|string|min:3|unique:m_user,username',
+                'nama' => 'required|string|max:100',
+                'password' => 'required|min:6'
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false, // response status, false: error/gagal, true: berhasil
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors(), // pesan error validasi
+                ]);
+            }
+
+            UserModel::create($request->all());
+            return response()->json([
+                'status' => true,
+                'message' => 'Data user berhasil disimpan'
+            ]);
+        }
+
+        redirect('/');
+    }
+
+
     public function edit_ajax(string $id)
     {
         $user = UserModel::find($id);
@@ -239,35 +283,6 @@ class UserController extends Controller
         return redirect('/');
     }
 
-
-    // Menyimpan perubahan data user
-    public function update(Request $request, string $id)
-    {
-        $request->validate([
-            // Username harus diisi, berupa string, minimal 3 karakter, dan bernilai unik
-            'username' => ['required', 'string', 'min:3', 'unique:m_user,username,' . $id . ',user_id'],
-            'nama' => 'required|string|max:100', // Nama harus diisi dan maksimal 100 karakter
-            'password' => 'nullable|min:5', // Password bisa diisi (minimal 5 karakter) dan bisa tidak diisi
-            'level_id' => 'required|integer' // Level_id harus diisi dan berupa angka
-        ]);
-
-        // Ambil data user berdasarkan ID
-        $user = UserModel::find($id);
-
-        // Jika password diisi, enkripsi, jika tidak, gunakan password lama
-        $password = $request->password ? bcrypt($request->password) : $user->password;
-
-        // Update data user
-        $user->update([
-            'username' => $request->username,
-            'nama' => $request->nama,
-            'password' => $password,
-            'level_id' => $request->level_id
-        ]);
-
-        return redirect('/user')->with('success', 'Data user berhasil diubah');
-    }
-
     public function confirm_ajax(string $id)
     {
         $user = UserModel::find($id);
@@ -298,19 +313,5 @@ class UserController extends Controller
     }
 
 
-    public function destroy(string $id)
-    {
-        $check = UserModel::find($id);
-        if (!$check) {
-            return redirect('/user')->with('error', 'Data user tidak ditemukan');
-        }
 
-        try {
-            UserModel::destroy($id);
-
-            return redirect('/user')->with('success', 'Data user berhasil dihapus');
-        } catch (\Illuminate\Database\QueryException $e) {
-            return redirect('/user')->with('error', 'Data user gagal dihapus karena masih terdapat tabel lain yang terkait dengan data ini');
-        }
-    }
 }
