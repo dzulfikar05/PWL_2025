@@ -5,8 +5,12 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                {{-- <a class="btn btn-sm btn-primary mt-1" href="{{ url('user/create') }}">Tambah</a> --}}
-                <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-sm btn-primary mt-1">Tambah</button>
+                <button onclick="modalAction('{{ url('/user/import') }}')" class="btn btn-info">Import User</button>
+                <a href="{{ url('/user/export_excel') }}" class="btn btn-primary"><i class="fa fa-file- excel"></i> Export
+                    User</a>
+                <a href="{{ url('/user/export_pdf') }}" class="btn btn-warning" target="_blank"><i
+                        class="fa fa-file- pdf"></i> Export User</a>
+                <button onclick="modalAction('{{ url('/user/create_ajax') }}')" class="btn btn-success">Tambah Data</button>
             </div>
         </div>
         <div class="card-body">
@@ -36,6 +40,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Foto</th>
                         <th>Username</th>
                         <th>Nama</th>
                         <th>Level Pengguna</th>
@@ -59,9 +64,9 @@
             });
         }
 
-        var dataUser;
+        var tableUser;
         $(document).ready(function() {
-            dataUser = $('#table_user').DataTable({
+            tableUser = $('#table_user').DataTable({
                 processing: true,
                 serverSide: true, // Jika ingin menggunakan server-side processing
                 ajax: {
@@ -78,6 +83,20 @@
                         orderable: false,
                         searchable: false
                     }, // Kolom nomor urut
+                    {
+                        data: "photo",
+                        className: "text-center",
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            if (data) {
+                                return `<img src="/storage/uploads/photo/${data}" width="100" class="rounded-circle"/>`;
+
+                            }
+                            return `<span class="text-muted"></span>`;
+                        }
+                    },
+
                     {
                         data: "username",
                         className: "",
@@ -105,7 +124,7 @@
                 ]
             });
             $('#level_id').on('change', function() {
-                dataUser.ajax.reload();
+                tableUser.ajax.reload();
             });
         });
     </script>

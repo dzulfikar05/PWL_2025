@@ -5,10 +5,10 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                {{-- <a class="btn btn-sm btn-primary mt-1" href="{{ url('level/create') }}">Tambah</a> --}}
-                <button onclick="modalAction('{{ url('/level/create_ajax') }}')"
-                    class="btn btn-sm btn-primary mt-1">Tambah</button>
-
+                <button onclick="modalAction('{{ url('/level/import') }}')" class="btn btn-info">Import Level</button>
+                {{-- <a href="{{ url('/level/export_excel') }}" class="btn btn-primary"><i class="fa fa-file- excel"></i> Export Level</a> --}}
+                {{-- <a href="{{ url('/level/export_pdf') }}" class="btn btn-warning" target="_blank"><i class="fa fa-file- pdf"></i> Export Level</a> --}}
+                <button onclick="modalAction('{{ url('/level/create_ajax') }}')" class="btn btn-success">Tambah Data</button>
             </div>
         </div>
         <div class="card-body">
@@ -43,9 +43,9 @@
                 $('#myModal').modal('show');
             });
         }
-        var dataLevel;
+        var tableLevel;
         $(document).ready(function() {
-            dataLevel = $('#table_level').DataTable({
+            tableLevel = $('#table_level').DataTable({
                 processing: true,
                 serverSide: true, // Jika ingin menggunakan server-side processing
                 ajax: {

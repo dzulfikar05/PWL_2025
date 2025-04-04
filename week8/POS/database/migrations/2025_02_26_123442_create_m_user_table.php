@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('username', 20)->unique(); // Unique untuk memastikan tidak ada username yang sama
             $table->string('nama', 100);
             $table->string('password');
+            $table->string('photo')->nullable(); // Menyimpan nama file foto profil
             $table->timestamps();
 
             // Foreign Key Constraint

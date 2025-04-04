@@ -5,9 +5,10 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                {{-- <a class="btn btn-sm btn-primary mt-1" href="{{ url('supplier/create') }}">Tambah</a> --}}
-                <button onclick="modalAction('{{ url('/supplier/create_ajax') }}')" class="btn btn-sm btn-primary mt-1">Tambah</button>
-
+                <button onclick="modalAction('{{ url('/supplier/import') }}')" class="btn btn-info">Import Supplier</button>
+                <a href="{{ url('/supplier/export_excel') }}" class="btn btn-primary"><i class="fa fa-file- excel"></i> Export Supplier</a>
+                <a href="{{ url('/supplier/export_pdf') }}" class="btn btn-warning" target="_blank"><i class="fa fa-file- pdf"></i> Export Supplier</a>
+                <button onclick="modalAction('{{ url('/supplier/create_ajax') }}')" class="btn btn-success">Tambah Data</button>
             </div>
         </div>
         <div class="card-body">
@@ -45,10 +46,10 @@
             });
         }
 
-        var dataSupplier;
+        var tableSupplier;
 
         $(document).ready(function() {
-            dataSupplier = $('#table_supplier').DataTable({
+            tableSupplier = $('#table_supplier').DataTable({
                 processing: true,
                 serverSide: true, // Jika ingin menggunakan server-side processing
                 ajax: {
