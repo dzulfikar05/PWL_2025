@@ -40,7 +40,7 @@ class StokController extends Controller
                 return $stok->barang->barang_nama ?? '-';
             })
             ->addColumn('user_nama', function ($stok) {
-                return $stok->user->name ?? '-';
+                return $stok->user->nama ?? '-';
             })
             ->addColumn('supplier_nama', function ($stok) {
                 return $stok->supplier->supplier_nama ?? '-';
@@ -84,6 +84,11 @@ class StokController extends Controller
                 ]);
             }
 
+            $barang = BarangModel::find($request->barang_id);
+            $barang->update([
+                'stok' => $barang->stok + $request->stok_jumlah
+            ]);
+
             StokModel::create($request->all());
 
             return response()->json([
@@ -123,6 +128,11 @@ class StokController extends Controller
 
             $stok = StokModel::find($id);
             if ($stok) {
+
+                $barang = BarangModel::find($request->barang_id);
+                $barang->update([
+                    'stok' => $barang->stok + $stok->stok_jumlah - $request->stok_jumlah
+                ]);
                 $stok->update($request->all());
 
                 return response()->json([
@@ -149,8 +159,15 @@ class StokController extends Controller
     public function delete_ajax(Request $request, $id)
     {
         if ($request->ajax()) {
+
             $stok = StokModel::find($id);
             if ($stok) {
+
+                $barang = BarangModel::find($stok->barang_id);
+                $barang->update([
+                    'stok' => $barang->stok - $stok->stok_jumlah
+                ]);
+
                 $stok->delete();
                 return response()->json([
                     'status' => true,

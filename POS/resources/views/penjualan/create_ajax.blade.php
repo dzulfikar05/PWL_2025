@@ -62,9 +62,10 @@
 
     function tambahBaris() {
         const index = $('#detail-barang tbody tr').length;
+
         let barangOptions = '<option value="">-- Pilih --</option>';
         barangs.forEach(barang => {
-            barangOptions += `<option value="${barang.barang_id}" data-harga="${barang.harga_jual}">${barang.barang_nama}</option>`;
+            barangOptions += `<option value="${barang.barang_id}" data-harga="${barang.harga_jual}"  data-stok="${barang.stok}">${barang.barang_nama}</option>`;
         });
 
         const row = `
@@ -92,8 +93,10 @@
     }
 
     $(document).ready(function() {
+        // function button add
         $('#tambah-barang').click(tambahBaris);
 
+        // onchange barang dipilih, akan mengisi harga
         $('#detail-barang').on('change', '.barang-select', function() {
             const harga = $(this).find(':selected').data('harga') || 0;
             const row = $(this).closest('tr');
@@ -101,15 +104,24 @@
             row.find('.jumlah').trigger('input');
         });
 
+        // menghitung sub total
         $('#detail-barang').on('input', '.jumlah', function() {
             const row = $(this).closest('tr');
-            const harga = parseFloat(row.find('.harga').val()) || 0;
+            const stok = row.find('.barang-select').find(':selected').data('stok') || 0;
             const jumlah = parseInt(row.find('.jumlah').val()) || 0;
+
+            if (jumlah > stok) {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: 'Jumlah barang melebihi stok' });
+                row.find('.jumlah').val(stok);
+            }
+
+            const harga = parseFloat(row.find('.harga').val()) || 0;
             const subtotal = harga * jumlah;
             row.find('.subtotal').val(subtotal);
             hitungTotal();
         });
 
+        // delete row
         $('#detail-barang').on('click', '.hapus-baris', function() {
             $(this).closest('tr').remove();
             hitungTotal();

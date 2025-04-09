@@ -100,6 +100,11 @@ class PenjualanController extends Controller
             ]);
 
             foreach ($request->barang_id as $i => $barangId) {
+                $barang = BarangModel::find($barangId);
+                $barang->update([
+                    'stok' => $barang->stok - $request->jumlah[$i]
+                ]);
+
                 PenjualanDetailModel::create([
                     'penjualan_id' => $penjualan->penjualan_id,
                     'barang_id' => $barangId,
@@ -149,9 +154,21 @@ class PenjualanController extends Controller
                 'pembeli' => $request->pembeli,
             ]);
 
+            foreach ($request->barang_id as $i => $barangId) {
+                $barang = BarangModel::find($barangId);
+                $barang->update([
+                    'stok' => $barang->stok + $request->jumlah[$i]
+                ]);
+            }
+
             PenjualanDetailModel::where('penjualan_id', $id)->delete();
 
             foreach ($request->barang_id as $i => $barangId) {
+                $barang = BarangModel::find($barangId);
+                $barang->update([
+                    'stok' => $barang->stok - $request->jumlah[$i]
+                ]);
+
                 PenjualanDetailModel::create([
                     'penjualan_id' => $id,
                     'barang_id' => $barangId,
@@ -177,8 +194,14 @@ class PenjualanController extends Controller
     public function delete_ajax(Request $request, $id)
     {
         if ($request->ajax()) {
-            $penjualan = PenjualanModel::find($id);
+            $penjualan = PenjualanModel::with('detail')->find($id);
             if ($penjualan) {
+                foreach ($penjualan->detail ?? [] as $detail) {
+                    $barang = BarangModel::find($detail->barang_id);
+                    $barang->update([
+                        'stok' => $barang->stok + $detail->jumlah
+                    ]);
+                }
                 PenjualanDetailModel::where('penjualan_id', $id)->delete();
                 $penjualan->delete();
 
