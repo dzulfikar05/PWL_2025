@@ -5,16 +5,27 @@
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
             <div class="card-tools">
-                <a href="{{ url('/penjualan/export_excel') }}" class="btn btn-primary">
-                    <i class="fa fa-file-excel"></i> Export Penjualan
-                </a>
-                <a href="{{ url('/penjualan/export_pdf') }}" class="btn btn-warning" target="_blank">
-                    <i class="fa fa-file-pdf"></i> Export Penjualan
-                </a>
-                <button onclick="modalAction('{{ url('/penjualan/create_ajax') }}')" class="btn btn-success">
-                    Tambah Data
-                </button>
+                <div class="row">
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="importExportDropdownPenjualan" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Export
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="importExportDropdownPenjualan">
+                            <a class="dropdown-item" href="{{ url('/penjualan/export_excel') }}">
+                                <i class="fa fa-file-excel"></i> Export to Excel
+                            </a>
+                            <a class="dropdown-item" href="{{ url('/penjualan/export_pdf') }}" target="_blank">
+                                <i class="fa fa-file-pdf"></i> Export to PDF
+                            </a>
+                        </div>
+                    </div>
+
+                    <button onclick="modalAction('{{ url('/penjualan/create_ajax') }}')" class="btn btn-primary mr-2">
+                        Tambah Data
+                    </button>
+                </div>
             </div>
+
         </div>
         <div class="card-body">
             @if (session('success'))

@@ -5,11 +5,28 @@
         <div class="card-header">
             <h3 class="card-title">Daftar barang</h3>
             <div class="card-tools">
-                <button onclick="modalAction('{{ url('/barang/import') }}')" class="btn btn-info">Import Barang</button>
-                <a href="{{ url('/barang/export_excel') }}" class="btn btn-primary"><i class="fa fa-file- excel"></i> Export Barang</a>
-                <a href="{{ url('/barang/export_pdf') }}" class="btn btn-warning" target="_blank"><i class="fa fa-file- pdf"></i> Export Barang</a>
-                <button onclick="modalAction('{{ url('/barang/create_ajax') }}')" class="btn btn-success">Tambah Data</button>
+                <div class="row">
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="importExportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Import / Export
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="importExportDropdown">
+                            <button class="dropdown-item" onclick="modalAction('{{ url('/barang/import') }}')">
+                                Import Barang
+                            </button>
+                            <a class="dropdown-item" href="{{ url('/barang/export_excel') }}">
+                                <i class="fa fa-file-excel"></i> Export to Excel
+                            </a>
+                            <a class="dropdown-item" href="{{ url('/barang/export_pdf') }}" target="_blank">
+                                <i class="fa fa-file-pdf"></i> Export to PDF
+                            </a>
+                        </div>
+                    </div>
+
+                    <button onclick="modalAction('{{ url('/barang/create_ajax') }}')" class="btn btn-primary mr-2">Tambah Data</button>
+                </div>
             </div>
+
         </div>
         <div class="card-body">
             <div id="filter" class="form-horizontal filter-date p-2 border-bottom mb-2">
