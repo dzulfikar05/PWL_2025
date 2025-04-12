@@ -388,7 +388,7 @@ class KategoriController extends Controller
 
         $pdf = Pdf::loadView('kategori.export_pdf', ['kategori' => $kategori]);
         $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
         return $pdf->stream('Data Kategori ' . date('Y-m-d H:i:s') . '.pdf');

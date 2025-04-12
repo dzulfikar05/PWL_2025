@@ -413,7 +413,7 @@ class SupplierController extends Controller
 
         $pdf = Pdf::loadView('supplier.export_pdf', ['supplier' => $supplier]);
         $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
         return $pdf->stream('Data Supplier ' . date('Y-m-d H:i:s') . '.pdf');

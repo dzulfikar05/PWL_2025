@@ -279,7 +279,7 @@ class BarangController extends Controller
 
         $pdf = Pdf::loadView('barang.export_pdf', ['barang' => $barang]);
         $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
         return $pdf->stream('Data Barang ' . date('Y-m-d H:i:s') . '.pdf');

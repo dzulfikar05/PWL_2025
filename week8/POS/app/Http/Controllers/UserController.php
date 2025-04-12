@@ -484,7 +484,7 @@ class UserController extends Controller
 
         $pdf = Pdf::loadView('user.export_pdf', ['user' => $user]);
         $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
         return $pdf->stream('Data User ' . date('Y-m-d H:i:s') . '.pdf');

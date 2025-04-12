@@ -388,7 +388,7 @@ class LevelController extends Controller
 
         $pdf = Pdf::loadView('level.export_pdf', ['level' => $level]);
         $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption("isRemoteEnabled", true);
+        $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
         return $pdf->stream('Data Level ' . date('Y-m-d H:i:s') . '.pdf');
