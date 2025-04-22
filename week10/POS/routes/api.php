@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
 use App\Http\Controllers\Api\RegisterController;
@@ -24,3 +25,10 @@ Route::post('/logout-api', LogoutController::class)->name('logout-api');
 Route::middleware('jwt.auth')->get('/user-api', function (Request $request) {
     return auth()->user();
 })->name('user-api');
+
+
+Route::get('levels', [LevelController::class, 'index']);
+Route::post('levels', [LevelController::class, 'store']);
+Route::get('levels/{level}', [LevelController::class, 'show']);
+Route::put('levels/{level}', [LevelController::class, 'update']);
+Route::delete('levels/{level}', [LevelController::class, 'destroy']);
