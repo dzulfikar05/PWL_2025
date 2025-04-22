@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\RegisterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/register-api', RegisterController::class)->name('register-api');
+Route::post('/login-api', LoginController::class)->name('login-api');
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+Route::middleware('jwt.auth')->get('/user-api', function (Request $request) {
+    return auth()->user();
+})->name('user-api');
