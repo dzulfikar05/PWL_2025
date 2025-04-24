@@ -35,12 +35,16 @@
                     </div>
                     <table class="table table-sm table-bordered table-striped">
                         <tr>
-                            <th class="text-right col-3">Barang :</th>
-                            <td class="col-9">{{ $stok->barang->barang_nama ?? '-' }}</td>
+                            <th class="text-right col-3">item :</th>
+                            <td class="col-9">{{ $stok->item ?? '-' }}</td>
                         </tr>
                         <tr>
                             <th class="text-right col-3">Jumlah :</th>
                             <td class="col-9">{{ $stok->stok_jumlah }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-right col-3">Harga Total :</th>
+                            <td class="col-9">{{ $stok->harga_total }}</td>
                         </tr>
                         <tr>
                             <th class="text-right col-3">Tanggal :</th>

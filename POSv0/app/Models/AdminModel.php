@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class CustomerModel extends Authenticatable
+use Illuminate\Database\Eloquent\Builder;
+class AdminModel extends Authenticatable
 {
     use HasFactory;
 
@@ -53,7 +52,7 @@ class CustomerModel extends Authenticatable
     protected static function booted(): void
     {
         static::addGlobalScope('isAdmin', function (Builder $builder) {
-            $builder->where('level_id', 2);
+            $builder->where('level_id', 1);
         });
 
     }

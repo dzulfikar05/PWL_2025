@@ -15,14 +15,14 @@ class BarangController extends Controller
 
     public function index()
     {
-        $activeMenu = 'barang';
+        $activeMenu = 'produk';
         $breadcrumb = (object) [
-            'title' => 'Data Barang',
-            'list' => ['Home', 'Barang']
+            'title' => 'Data Produk',
+            'list' => ['Home', 'Produk']
         ];
 
         $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get();
-        return view('barang.index', [
+        return view('produk.index', [
             'activeMenu' => $activeMenu,
             'breadcrumb' => $breadcrumb,
             'kategori' => $kategori
@@ -31,7 +31,7 @@ class BarangController extends Controller
 
     public function list(Request $request)
     {
-        $barang = BarangModel::select('barang_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual', 'kategori_id', 'stok')->with('kategori');
+        $barang = BarangModel::with('kategori');
 
         $kategori_id = $request->input('filter_kategori');
         if (!empty($kategori_id)) {
@@ -41,8 +41,8 @@ class BarangController extends Controller
         return DataTables::of($barang)
             ->addIndexColumn()
             ->addColumn('aksi', function ($barang) {
-                $btn = '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $barang->barang_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button> ';
+                $btn = '<button onclick="modalAction(\'' . url('/produk/' . $barang->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/produk/' . $barang->barang_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button> ';
                 return $btn;
             })
             ->rawColumns(['aksi'])
@@ -52,7 +52,7 @@ class BarangController extends Controller
     public function create_ajax()
     {
         $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get();
-        return view('barang.create_ajax')->with('kategori', $kategori);
+        return view('produk.create_ajax')->with('kategori', $kategori);
     }
 
     public function store_ajax(Request $request)
@@ -62,8 +62,7 @@ class BarangController extends Controller
                 'kategori_id' => ['required', 'integer', 'exists:m_kategori,kategori_id'],
                 'barang_kode' => ['required', 'min:3', 'max:20', 'unique:m_barang,barang_kode'],
                 'barang_nama' => ['required', 'string', 'max:100'],
-                'harga_beli' => ['required', 'numeric'],
-                'harga_jual' => ['required', 'numeric'],
+                'harga' => ['required', 'numeric'],
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -88,7 +87,7 @@ class BarangController extends Controller
     {
         $barang = BarangModel::find($id);
         $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get();
-        return view('barang.edit_ajax', ['barang' => $barang, 'kategori' => $kategori]);
+        return view('produk.edit_ajax', ['barang' => $barang, 'kategori' => $kategori]);
     }
 
     public function update_ajax(Request $request, $id)
@@ -98,8 +97,7 @@ class BarangController extends Controller
                 'kategori_id' => ['required', 'integer', 'exists:m_kategori,kategori_id'],
                 'barang_kode' => ['required', 'min:3', 'max:20', 'unique:m_barang,barang_kode, ' . $id . ',barang_id'],
                 'barang_nama' => ['required', 'string', 'max:100'],
-                'harga_beli' => ['required', 'numeric'],
-                'harga_jual' => ['required', 'numeric'],
+                'harga' => ['required', 'numeric'],
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -130,7 +128,7 @@ class BarangController extends Controller
     public function confirm_ajax($id)
     {
         $barang = BarangModel::find($id);
-        return view('barang.confirm_ajax', ['barang' => $barang]);
+        return view('produk.confirm_ajax', ['barang' => $barang]);
     }
 
     public function delete_ajax(Request $request, $id)
@@ -155,7 +153,7 @@ class BarangController extends Controller
 
     public function import()
     {
-        return view('barang.import');
+        return view('produk.import');
     }
 
     public function import_ajax(Request $request)
@@ -190,8 +188,7 @@ class BarangController extends Controller
                             'kategori_id' => $value['A'],
                             'barang_kode' => $value['B'],
                             'barang_nama' => $value['C'],
-                            'harga_beli' => $value['D'],
-                            'harga_jual' => $value['E'],
+                            'harga' => $value['D'],
                             'created_at' => now(),
                         ];
                     }
@@ -217,8 +214,7 @@ class BarangController extends Controller
 
     public function export_excel()
     {
-        $barang = BarangModel::select('kategori_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual')
-            ->orderBy('kategori_id')
+        $barang = BarangModel::orderBy('kategori_id')
             ->with('kategori')
             ->get();
 
@@ -228,9 +224,8 @@ class BarangController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Kode Barang');
         $sheet->setCellValue('C1', 'Nama Barang');
-        $sheet->setCellValue('D1', 'Harga Beli');
-        $sheet->setCellValue('E1', 'Harga Jual');
-        $sheet->setCellValue('F1', 'Kategori');
+        $sheet->setCellValue('D1', 'Harga');
+        $sheet->setCellValue('E1', 'Kategori');
 
         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
         $no = 1;
@@ -240,9 +235,8 @@ class BarangController extends Controller
             $sheet->setCellValue('A' . $baris, $no);
             $sheet->setCellValue('B' . $baris, $value->barang_kode);
             $sheet->setCellValue('C' . $baris, $value->barang_nama);
-            $sheet->setCellValue('D' . $baris, $value->harga_beli);
-            $sheet->setCellValue('E' . $baris, $value->harga_jual);
-            $sheet->setCellValue('F' . $baris, $value->kategori->kategori_nama);
+            $sheet->setCellValue('D' . $baris, $value->harga);
+            $sheet->setCellValue('E' . $baris, $value->kategori->kategori_nama);
             $baris++;
             $no++;
         }
@@ -271,13 +265,12 @@ class BarangController extends Controller
 
     public function export_pdf()
     {
-        $barang = BarangModel::select('kategori_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual')
-            ->orderBy('kategori_id')
+        $barang = BarangModel::orderBy('kategori_id')
             ->orderBy('barang_kode')
             ->with('kategori')
             ->get();
 
-        $pdf = Pdf::loadView('barang.export_pdf', ['barang' => $barang]);
+        $pdf = Pdf::loadView('produk.export_pdf', ['barang' => $barang]);
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();

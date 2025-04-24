@@ -29,21 +29,36 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Barang</label>
-                        <select name="barang_id" id="barang_id" class="form-control" required>
-                            @foreach ($barang as $barang)
-                                <option value="{{ $barang->barang_id }}" {{ $stok->barang_id == $barang->barang_id ? 'selected' : '' }}>
-                                    {{ $barang->barang_nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <small id="error-barang_id" class="error-text form-text text-danger"></small>
+                        <label>Tanggal</label>
+                        <input type="date" name="stok_tanggal" id="stok_tanggal" disabled
+                            value="{{ $stok->stok_tanggal ? \Carbon\Carbon::parse($stok->stok_tanggal)->format('Y-m-d') : '' }}"
+                            class="form-control" required>
+                        <small id="error-stok_tanggal" class="error-text form-text text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>item</label>
+                        <input type="text" name="item" id="item" value="{{ $stok->item }}"
+                            class="form-control" required>
+                        <small id="error-item" class="error-text form-text text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah</label>
+                        <input type="number" name="stok_jumlah" id="stok_jumlah" value="{{ $stok->stok_jumlah }}"
+                            class="form-control" required>
+                        <small id="error-stok_jumlah" class="error-text form-text text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Harga Total</label>
+                        <input type="number" name="harga_total" id="harga_total" value="{{ $stok->harga_total }}"
+                            class="form-control" required>
+                        <small id="error-harga_total" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label>Supplier</label>
                         <select name="supplier_id" id="supplier_id" class="form-control" required>
                             @foreach ($supplier as $supplier)
-                                <option value="{{ $supplier->supplier_id }}" {{ $stok->supplier_id == $supplier->supplier_id ? 'selected' : '' }}>
+                                <option value="{{ $supplier->supplier_id }}"
+                                    {{ $stok->supplier_id == $supplier->supplier_id ? 'selected' : '' }}>
                                     {{ $supplier->supplier_nama }}
                                 </option>
                             @endforeach
@@ -51,15 +66,12 @@
                         <small id="error-supplier_id" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
-                        <label>Tanggal</label>
-                        <input type="date" name="stok_tanggal" id="stok_tanggal" value="{{ $stok->stok_tanggal ? \Carbon\Carbon::parse($stok->stok_tanggal)->format('Y-m-d') : '' }}" class="form-control" required>
-                        <small id="error-stok_tanggal" class="error-text form-text text-danger"></small>
+                        <label>Keterangan</label>
+                        <textarea name="keterangan" id="keterangan" class="form-control" required>{{ $stok->keterangan }}</textarea>
+
+                        <small id="error-keterangan" class="error-text form-text text-danger"></small>
                     </div>
-                    <div class="form-group">
-                        <label>Jumlah</label>
-                        <input type="number" name="stok_jumlah" id="stok_jumlah" value="{{ $stok->stok_jumlah }}" class="form-control" required>
-                        <small id="error-stok_jumlah" class="error-text form-text text-danger"></small>
-                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
@@ -70,20 +82,34 @@
     </form>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $("#form-edit").validate({
                 rules: {
-                    barang_id: { required: true },
-                    supplier_id: { required: true },
-                    stok_tanggal: { required: true, date: true },
-                    stok_jumlah: { required: true, number: true, min: 1 },
+                    barang_id: {
+                        required: true
+                    },
+                    supplier_id: {
+                        required: true
+                    },
+                    stok_tanggal: {
+                        required: true,
+                        date: true
+                    },
+                    stok_jumlah: {
+                        required: true,
+                        number: true,
+                        min: 1
+                    },
+                    keterangan: {
+                        required: false
+                    }
                 },
-                submitHandler: function (form) {
+                submitHandler: function(form) {
                     $.ajax({
                         url: form.action,
                         type: form.method,
                         data: $(form).serialize(),
-                        success: function (response) {
+                        success: function(response) {
                             if (response.status) {
                                 $('#myModal').modal('hide');
                                 Swal.fire({
@@ -94,7 +120,7 @@
                                 tableStok.ajax.reload();
                             } else {
                                 $('.error-text').text('');
-                                $.each(response.msgField, function (prefix, val) {
+                                $.each(response.msgField, function(prefix, val) {
                                     $('#error-' + prefix).text(val[0]);
                                 });
                                 Swal.fire({
@@ -108,14 +134,14 @@
                     return false;
                 },
                 errorElement: 'span',
-                errorPlacement: function (error, element) {
+                errorPlacement: function(error, element) {
                     error.addClass('invalid-feedback');
                     element.closest('.form-group').append(error);
                 },
-                highlight: function (element) {
+                highlight: function(element) {
                     $(element).addClass('is-invalid');
                 },
-                unhighlight: function (element) {
+                unhighlight: function(element) {
                     $(element).removeClass('is-invalid');
                 }
             });

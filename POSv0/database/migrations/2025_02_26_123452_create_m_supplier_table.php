@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->bigIncrements('supplier_id'); // Primary Key
             $table->string('supplier_kode', 10)->unique();
             $table->string('supplier_nama', 100);
-            $table->string('supplier_telp', 20);
-            $table->text('supplier_alamat');
+            $table->string('supplier_wa', 20)->nullable();
+            $table->text('supplier_alamat')->nullable();
             $table->timestamps();
         });
     }

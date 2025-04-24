@@ -1,7 +1,7 @@
     <form action="{{ url('/supplier/ajax') }}" method="POST" id="form-tambah">
         @csrf
-        <div id="modal-master" class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
+        <div id="modal-master" class="modal-dialog " role="document">
+            <div class="modal-content ">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Tambah Data Supplier</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -21,10 +21,10 @@
                         <small id="error-supplier_nama" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
-                        <label>Supplier Telp</label>
-                        <input value="" type="text" name="supplier_telp" id="supplier_telp" class="form-control"
+                        <label>Supplier WA</label>
+                        <input value="" name="supplier_wa" id="supplier_wa" class="form-control" type="number"
                             required>
-                        <small id="error-supplier_telp" class="error-text form-text text-danger"></small>
+                        <small id="error-supplier_wa" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label>Supplier Alamat</label>
@@ -56,13 +56,13 @@
                         minlength: 0,
                         maxlength: 100
                     },
-                    supplier_telp: {
-                        required: true,
+                    supplier_wa: {
+                        required: false,
                         minlength: 0,
                         maxlength: 20
                     },
                     supplier_alamat: {
-                        required: true,
+                        required: false,
                     },
                 },
                 submitHandler: function(form) {

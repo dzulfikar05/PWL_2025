@@ -1,55 +1,40 @@
-@empty($supplier)
-    <div id="modal-master" class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Kesalahan</h5>
-                <button type="button" class="close" data-dismiss="modal" aria- label="Close"><span
-                        aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-danger">
-                    <h5><i class="icon fas fa-ban"></i> Kesalahan!!!</h5> Data yang anda cari tidak ditemukan
-                </div>
-                <a href="{{ url('/supplier') }}" class="btn btn-warning">Kembali</a>
-            </div>
-        </div>
-    </div>
-@else
-    <form action="{{ url('/supplier/' . $supplier->supplier_id . '/update_ajax') }}" method="POST" id="form-edit">
-        @csrf @method('PUT')
+    <form action="{{ url('/produk/ajax') }}" method="POST" id="form-tambah">
+        @csrf
         <div id="modal-master" class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit Data Supplier</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Tambah Data Produk</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Supplier Kode</label>
-                        <input value="{{ $supplier->supplier_kode }}" type="text" name="supplier_kode" id="supplier_kode" class="form-control"
-                            required>
-                        <small id="error-supplier_kode" class="error-text form-text text-danger"></small>
+                    <div class="form-group ">
+                        <label>Kategori</label>
+                        <select class="form-control" id="kategori_id" name="kategori_id" required>
+                            <option value="">- Pilih Kategori -</option>
+                            @foreach ($kategori as $item)
+                                <option value="{{ $item->kategori_id }}">{{ $item->kategori_nama }}</option>
+                            @endforeach
+                        </select>
+                        <small id="error-kategori_id" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
-                        <label>Supplier Nama</label>
-                        <input value="{{ $supplier->supplier_nama }}" type="text" name="supplier_nama" id="supplier_nama" class="form-control"
-                            required>
-                        <small id="error-supplier_nama" class="error-text form-text text-danger"></small>
+                        <label>Produk Kode</label>
+                        <input value="" type="text" name="barang_kode" id="barang_kode"
+                            class="form-control" required>
+                        <small id="error-barang_kode" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
-                        <label>Supplier WA</label>
-                        <input value="{{ $supplier->supplier_wa }}" type="number" name="supplier_wa" id="supplier_wa" class="form-control"
-                            required>
-                        <small id="error-supplier_wa" class="error-text form-text text-danger"></small>
+                        <label>Produk Nama</label>
+                        <input value="" type="text" name="barang_nama" id="barang_nama"
+                            class="form-control" required>
+                        <small id="error-barang_nama" class="error-text form-text text-danger"></small>
                     </div>
                     <div class="form-group">
-                        <label>Supplier Alamat</label>
-                        <textarea name="supplier_alamat" id="supplier_alamat" class="form-control"
+                        <label>Harga</label>
+                        <input value="" type="number" name="harga" id="harga" class="form-control"
                             required>
-                            {{ $supplier->supplier_alamat }}
-                        </textarea>
-                        <small id="error-supplier_alamat" class="error-text form-text text-danger"></small>
+                        <small id="error-harga" class="error-text form-text text-danger"></small>
                     </div>
 
                 </div>
@@ -62,25 +47,25 @@
     </form>
     <script>
         $(document).ready(function() {
-            $("#form-edit").validate({
+            $("#form-tambah").validate({
                 rules: {
-                    supplier_kode: {
+                    kategori_id: {
+                        required: true,
+                        number: true
+                    },
+                    barang_kode: {
                         required: true,
                         minlength: 3,
                         maxlength: 20
                     },
-                    supplier_nama: {
+                    barang_nama: {
                         required: true,
                         minlength: 0,
                         maxlength: 100
                     },
-                    supplier_wa: {
-                        required: false,
-                        minlength: 0,
-                        maxlength: 20
-                    },
-                    supplier_alamat: {
-                        required: false,
+                    harga: {
+                        required: true,
+                        number: true
                     },
                 },
                 submitHandler: function(form) {
@@ -96,7 +81,7 @@
                                     title: 'Berhasil',
                                     text: response.message
                                 });
-                                tableSupplier.ajax.reload();
+                                tableProduk.ajax.reload();
                             } else {
                                 $('.error-text').text('');
                                 $.each(response.msgField, function(prefix, val) {
@@ -126,4 +111,3 @@
             });
         });
     </script>
-@endempty

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
 
+use function PHPUnit\Framework\isEmpty;
+
 class SupplierController extends Controller
 {
 
@@ -35,7 +37,7 @@ class SupplierController extends Controller
             'supplier_id',
             'supplier_kode',
             'supplier_nama',
-            'supplier_telp',
+            'supplier_wa',
             'supplier_alamat',
         );
 
@@ -62,8 +64,8 @@ class SupplierController extends Controller
             $rules = [
                 'supplier_kode' => 'required|string|min:3|unique:m_supplier,supplier_kode',
                 'supplier_nama' => 'required|string|max:100',
-                'supplier_telp' => 'required|string|max:20',
-                'supplier_alamat' => 'required|string',
+                'supplier_wa' => 'nullable|string|max:20',
+                'supplier_alamat' => 'nullable|string',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -99,8 +101,8 @@ class SupplierController extends Controller
             $rules = [
                 'supplier_kode' => ['required', 'string', 'min:3', 'unique:m_supplier,supplier_kode,' . $id . ',supplier_id'],
                 'supplier_nama' => 'required|string|max:100',
-                'supplier_telp' => 'required|string|max:20',
-                'supplier_alamat' => 'required|string',
+                'supplier_wa' => 'nullable|string|max:20',
+                'supplier_alamat' => 'nullable|string',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -194,8 +196,8 @@ class SupplierController extends Controller
                         $insert[] = [
                             'supplier_kode' => $value['A'],
                             'supplier_nama' => $value['B'],
-                            'supplier_telp' => $value['C'],
-                            'supplier_alamat' => $value['D'],
+                            'supplier_wa' => isEmpty($value['C']) ? (int)$value['C'] : null,
+                            'supplier_alamat' => isEmpty($value['D']) ? $value['D'] : null,
                             'created_at' => now(),
                         ];
                     }
@@ -221,7 +223,7 @@ class SupplierController extends Controller
 
     public function export_excel()
     {
-        $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_telp', 'supplier_alamat')
+        $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_wa', 'supplier_alamat')
             ->orderBy('supplier_id')
             ->get();
 
@@ -231,7 +233,7 @@ class SupplierController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Kode Supplier');
         $sheet->setCellValue('C1', 'Nama Supplier');
-        $sheet->setCellValue('D1', 'Telp Supplier');
+        $sheet->setCellValue('D1', 'WA Supplier');
         $sheet->setCellValue('E1', 'Alamat Supplier');
 
         $sheet->getStyle('A1:E1')->getFont()->setBold(true);
@@ -243,7 +245,7 @@ class SupplierController extends Controller
             $sheet->setCellValue('A' . $baris, $no);
             $sheet->setCellValue('B' . $baris, $value->supplier_kode);
             $sheet->setCellValue('C' . $baris, $value->supplier_nama);
-            $sheet->setCellValue('D' . $baris, $value->supplier_telp);
+            $sheet->setCellValue('D' . $baris, $value->supplier_wa);
             $sheet->setCellValue('E' . $baris, $value->supplier_alamat);
             $baris++;
             $no++;
@@ -273,7 +275,7 @@ class SupplierController extends Controller
 
     public function export_pdf()
     {
-        $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_telp', 'supplier_alamat')
+        $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_wa', 'supplier_alamat')
             ->orderBy('supplier_id')
             ->get();
 

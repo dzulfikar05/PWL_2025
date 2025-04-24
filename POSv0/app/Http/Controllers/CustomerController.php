@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AdminModel;
 use App\Models\LevelModel;
-use App\Models\UserModel;
+use App\Models\CustomerModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,32 +12,31 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
 
-class UserController extends Controller
+class CustomerController extends Controller
 {
 
     public function index()
     {
         $breadcrumb = (object) [
-            'title' => 'Daftar User',
-            'list' => ['Home', 'User']
+            'title' => 'Daftar Customer',
+            'list' => ['Home', 'Customer']
         ];
 
         $page = (object) [
-            'title' => 'Daftar user yang terdaftar dalam sistem'
+            'title' => 'Daftar customer yang terdaftar dalam sistem'
         ];
 
-        $activeMenu = 'user';
+        $activeMenu = 'customer';
 
         $level = LevelModel::all();
 
-        return view('user.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
+        return view('customer.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
 
     public function list(Request $request)
     {
-        $users = UserModel::select('user_id', 'username', 'nama', 'level_id', 'photo')
-            ->with('level');
+        $users = CustomerModel::with('level');
 
         if ($request->level_id) {
             $users->where('level_id', $request->level_id);
@@ -47,8 +45,8 @@ class UserController extends Controller
         return DataTables::of($users)
             ->addIndexColumn()
             ->addColumn('aksi', function ($user) {
-                $btn = '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/user/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button> ';
+                $btn = '<button onclick="modalAction(\'' . url('/customer/' . $user->user_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/customer/' . $user->user_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button> ';
                 return $btn;
             })
             ->rawColumns(['aksi'])
@@ -59,7 +57,7 @@ class UserController extends Controller
     {
         $level = LevelModel::select('level_id', 'level_nama')->get();
 
-        return view('user.create_ajax')
+        return view('customer.create_ajax')
             ->with('level', $level);
     }
 
@@ -67,7 +65,6 @@ class UserController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'level_id' => 'required|integer',
                 'username' => 'required|string|min:3|unique:m_user,username',
                 'nama' => 'required|string|max:100',
                 'password' => 'required|min:6',
@@ -95,10 +92,13 @@ class UserController extends Controller
                 $photoName = $filename;
             }
 
-            UserModel::create([
-                'level_id' => $request->level_id,
+            CustomerModel::create([
+                'level_id' => 2,
                 'username' => $request->username,
                 'nama' => $request->nama,
+                'jk' => $request->jk,
+                'alamat' => $request->alamat,
+                'wa' => $request->wa,
                 'password' => bcrypt($request->password),
                 'photo' => $photoName,
             ]);
@@ -115,20 +115,22 @@ class UserController extends Controller
 
     public function edit_ajax(string $id)
     {
-        $user = UserModel::find($id);
+        $user = CustomerModel::find($id);
         $level = LevelModel::select('level_id', 'level_nama')->get();
 
-        return view('user.edit_ajax', ['user' => $user, 'level' => $level]);
+        return view('customer.edit_ajax', ['user' => $user, 'level' => $level]);
     }
 
     public function update_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'level_id' => 'required|integer',
                 'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
                 'nama'    => 'required|max:100',
                 'password' => 'nullable|min:6|max:20',
+                'jk' => 'required',
+                'alamat' => 'required|string',
+                'wa' => 'required|integer',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ];
 
@@ -141,7 +143,7 @@ class UserController extends Controller
                 ]);
             }
 
-            $user = UserModel::find($id);
+            $user = CustomerModel::find($id);
             if (!$user) {
                 return response()->json([
                     'status' => false,
@@ -174,7 +176,7 @@ class UserController extends Controller
             if(isset($params['_token'])) unset($params['_token']);
             if(isset($params['_method'])) unset($params['_method']);
 
-            UserModel::where('user_id', $id)->update($params);
+            CustomerModel::where('user_id', $id)->update($params);
 
             return response()->json([
                 'status' => true,
@@ -188,15 +190,15 @@ class UserController extends Controller
 
     public function confirm_ajax(string $id)
     {
-        $user = UserModel::find($id);
+        $user = CustomerModel::find($id);
 
-        return view('user.confirm_ajax', ['user' => $user]);
+        return view('customer.confirm_ajax', ['user' => $user]);
     }
 
     public function delete_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $user = UserModel::find($id);
+            $user = CustomerModel::find($id);
             if ($user) {
                 $user->delete();
                 return response()->json([
@@ -216,7 +218,7 @@ class UserController extends Controller
 
     public function import()
     {
-        return view('user.import');
+        return view('customer.import');
     }
 
     public function import_ajax(Request $request)
@@ -250,15 +252,18 @@ class UserController extends Controller
                         $insert[] = [
                             'nama' => $value['A'],
                             'username' => $value['B'],
-                            'level_id' => $value['C'],
-                            'password' => Hash::make($value['B']),
+                            'jk' => $value['C'],
+                            'alamat' => $value['D'],
+                            'wa' => $value['E'],
+                            'level_id' => 2,
+                            'password' => Hash::make("password_".$value['B']),
                             'created_at' => now(),
                         ];
                     }
                 }
 
                 if (count($insert) > 0) {
-                    UserModel::insertOrIgnore($insert);
+                    CustomerModel::insertOrIgnore($insert);
                 }
 
                 return response()->json([
@@ -277,8 +282,7 @@ class UserController extends Controller
 
     public function export_excel()
     {
-        $user = UserModel::select('nama', 'username', 'level_id')
-            ->with('level')
+        $user = CustomerModel::with('level')
             ->orderBy('user_id')
             ->get();
 
@@ -288,7 +292,9 @@ class UserController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'Nama');
         $sheet->setCellValue('C1', 'Username');
-        $sheet->setCellValue('D1', 'Level');
+        $sheet->setCellValue('D1', 'Jenis Kelamin');
+        $sheet->setCellValue('E1', 'Alamat');
+        $sheet->setCellValue('F1', 'Nomor Whatsapp');
 
         $sheet->getStyle('A1:F1')->getFont()->setBold(true);
 
@@ -299,7 +305,9 @@ class UserController extends Controller
             $sheet->setCellValue('A' . $baris, $no);
             $sheet->setCellValue('B' . $baris, $value->nama);
             $sheet->setCellValue('C' . $baris, $value->username);
-            $sheet->setCellValue('D' . $baris, $value->level->level_nama);
+            $sheet->setCellValue('D' . $baris, $value->jk == 'male'?"Laki-laki":"Perempuan");
+            $sheet->setCellValue('E' . $baris, $value->alamat);
+            $sheet->setCellValue('F' . $baris, $value->wa);
             $baris++;
             $no++;
         }
@@ -308,10 +316,10 @@ class UserController extends Controller
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        $sheet->setTitle('Data User');
+        $sheet->setTitle('Data Customer');
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Data User ' . date('Y-m-d H:i:s') . '.xlsx';
+        $filename = 'Data Customer ' . date('Y-m-d H:i:s') . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
@@ -328,17 +336,16 @@ class UserController extends Controller
 
     public function export_pdf()
     {
-        $user = UserModel::select('nama', 'username', 'level_id')
-        ->with('level')
+        $user = CustomerModel::with('level')
         ->orderBy('user_id')
         ->get();
 
-        $pdf = Pdf::loadView('user.export_pdf', ['user' => $user]);
+        $pdf = Pdf::loadView('customer.export_pdf', ['user' => $user]);
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOption("isRemoteEnabled", false);
         $pdf->render();
 
-        return $pdf->stream('Data User ' . date('Y-m-d H:i:s') . '.pdf');
+        return $pdf->stream('Data Customer ' . date('Y-m-d H:i:s') . '.pdf');
     }
 
 }

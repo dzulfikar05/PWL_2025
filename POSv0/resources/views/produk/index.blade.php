@@ -11,19 +11,19 @@
                             Import / Export
                         </button>
                         <div class="dropdown-menu" aria-labelledby="importExportDropdown">
-                            <button class="dropdown-item" onclick="modalAction('{{ url('/barang/import') }}')">
-                                Import Barang
+                            <button class="dropdown-item" onclick="modalAction('{{ url('/produk/import') }}')">
+                                Import Produk
                             </button>
-                            <a class="dropdown-item" href="{{ url('/barang/export_excel') }}">
+                            <a class="dropdown-item" href="{{ url('/produk/export_excel') }}">
                                 <i class="fa fa-file-excel"></i> Export to Excel
                             </a>
-                            <a class="dropdown-item" href="{{ url('/barang/export_pdf') }}" target="_blank">
+                            <a class="dropdown-item" href="{{ url('/produk/export_pdf') }}" target="_blank">
                                 <i class="fa fa-file-pdf"></i> Export to PDF
                             </a>
                         </div>
                     </div>
 
-                    <button onclick="modalAction('{{ url('/barang/create_ajax') }}')" class="btn btn-primary mr-2">Tambah Data</button>
+                    <button onclick="modalAction('{{ url('/produk/create_ajax') }}')" class="btn btn-primary mr-2">Tambah Data</button>
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                                         <option value="{{ $l->kategori_id }}">{{ $l->kategori_nama }}</option>
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted">Kategori Barang</small>
+                                <small class="form-text text-muted">Kategori Produk</small>
                             </div>
                         </div>
                     </div>
@@ -57,12 +57,10 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Kode Barang</th>
-                        <th>Nama Barang</th>
-                        <th>Harga Beli</th>
-                        <th>Harga Jual</th>
+                        <th>Kode Produk</th>
+                        <th>Nama Produk</th>
+                        <th>Harga</th>
                         <th>Kategori</th>
-                        <th>Stok</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -83,13 +81,13 @@
             });
         }
 
-        var tableBarang;
+        var tableProduk;
         $(document).ready(function() {
-            tableBarang = $('#table-barang').DataTable({
+            tableProduk = $('#table-barang').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    "url": "{{ url('barang/list') }}",
+                    "url": "{{ url('produk/list') }}",
                     "dataType": "json",
                     "type": "POST",
                     "data": function(d) {
@@ -118,7 +116,7 @@
                         searchable: true
                     },
                     {
-                        data: "harga_beli",
+                        data: "harga",
                         className: "",
                         width: "10%",
                         orderable: true,
@@ -127,16 +125,7 @@
                             return new Intl.NumberFormat('id-ID').format(data);
                         }
                     },
-                    {
-                        data: "harga_jual",
-                        className: "",
-                        width: "10%",
-                        orderable: true,
-                        searchable: false,
-                        render: function(data, type, row) {
-                            return new Intl.NumberFormat('id-ID').format(data);
-                        }
-                    },
+
                     {
                         data: "kategori.kategori_nama",
                         className: "",
@@ -144,13 +133,7 @@
                         orderable: true,
                         searchable: false
                     },
-                    {
-                        data: "stok",
-                        className: "",
-                        width: "8%",
-                        orderable: true,
-                        searchable: false
-                    },
+
                     {
                         data: "aksi",
                         className: "text-center",
@@ -163,12 +146,12 @@
 
             $('#table-barang_filter input').unbind().bind().on('keyup', function(e) {
                 if (e.keyCode == 13) { // enter key
-                    tableBarang.search(this.value).draw();
+                    tableProduk.search(this.value).draw();
                 }
             });
 
             $('.filter_kategori').change(function() {
-                tableBarang.draw();
+                tableProduk.draw();
             });
         });
     </script>

@@ -12,8 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('kategori_id'); // Foreign Key ke m_kategori
             $table->string('barang_kode', 10)->unique();
             $table->string('barang_nama', 100);
-            $table->integer('harga_beli');
-            $table->integer('harga_jual');
+            $table->bigInteger('harga');
             $table->timestamps();
 
             // Foreign Key Constraint

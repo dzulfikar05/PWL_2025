@@ -14,10 +14,6 @@ class StokModel extends Model
     protected $primaryKey = 'stok_id';
     protected $guarded = [];
 
-    public function barang(): BelongsTo
-    {
-        return $this->belongsTo(BarangModel::class, 'barang_id', 'barang_id');
-    }
 
     public function user(): BelongsTo
     {
