@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+
         Schema::create('t_penjualan_detail', function (Blueprint $table) {
             $table->bigIncrements('detail_id'); // Primary Key
             $table->unsignedBigInteger('penjualan_id'); // Foreign Key ke t_penjualan

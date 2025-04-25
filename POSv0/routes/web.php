@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PesananController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -166,6 +167,24 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}/delete_ajax', [PenjualanController::class, 'delete_ajax']);
             Route::get('/export_excel', [PenjualanController::class, 'export_excel']);
             Route::get('/export_pdf', [PenjualanController::class, 'export_pdf']);
+        });
+
+        Route::group(['prefix' => 'pesanan'], function () {
+            Route::get('/', [PesananController::class, 'index']);
+            Route::post('/list', [PesananController::class, 'list']);
+            Route::get('/create_ajax', [PesananController::class, 'create_ajax']);
+            Route::post('/ajax', [PesananController::class, 'store_ajax']);
+            Route::get('/{id}/show_ajax', [PesananController::class, 'show_ajax']);
+            Route::get('/{id}/edit_ajax', [PesananController::class, 'edit_ajax']);
+            Route::get('/{id}/edit_ajax', [PesananController::class, 'edit_ajax']);
+            Route::put('/{id}/update_ajax', [PesananController::class, 'update_ajax']);
+            Route::get('/{id}/delete_ajax', [PesananController::class, 'confirm_ajax']);
+            Route::delete('/{id}/delete_ajax', [PesananController::class, 'delete_ajax']);
+            Route::get('/export_excel', [PesananController::class, 'export_excel']);
+            Route::get('/export_pdf', [PesananController::class, 'export_pdf']);
+
+            Route::post('/{id}/update_status', [PesananController::class, 'update_status']);
+            Route::get('/{id}/print_struk', [PesananController::class, 'print_struk']);
         });
     });
 

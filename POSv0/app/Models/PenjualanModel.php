@@ -21,6 +21,11 @@ class PenjualanModel extends Model
         return $this->belongsTo(UserModel::class, 'user_id', 'user_id');
     }
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class, 'customer_id', 'user_id');
+    }
+
     public function detail(): HasMany
     {
         return $this->hasMany(PenjualanDetailModel::class, 'penjualan_id', 'penjualan_id');

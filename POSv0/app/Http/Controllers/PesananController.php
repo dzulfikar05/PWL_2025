@@ -5,37 +5,40 @@ namespace App\Http\Controllers;
 use App\Models\PenjualanModel;
 use App\Models\PenjualanDetailModel;
 use App\Models\BarangModel;
+use App\Models\CustomerModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
 
-class PenjualanController extends Controller
+class PesananController extends Controller
 {
     public function index()
     {
         $breadcrumb = (object) [
-            'title' => 'Daftar Penjualan',
-            'list' => ['Home', 'Penjualan']
+            'title' => 'Daftar Pesanan',
+            'list' => ['Home', 'Pesanan']
         ];
 
         $page = (object) [
-            'title' => 'Daftar penjualan yang tercatat dalam sistem'
+            'title' => 'Daftar pesanan pelanggan yang tercatat dalam sistem'
         ];
 
-        $activeMenu = 'penjualan';
+        $activeMenu = 'pesanan';
 
-        return view('penjualan.index', compact('breadcrumb', 'page', 'activeMenu'));
+        return view('pesanan.index', compact('breadcrumb', 'page', 'activeMenu'));
     }
 
     public function list(Request $request)
     {
-        $penjualan = PenjualanModel::with('user')
+        $penjualan = PenjualanModel::with('user', 'customer')
+            ->where('status', '=', 'validation_payment')
+            ->orWhere('status', '=', 'rejected')
             ->select([
                 'penjualan_id',
                 'user_id',
-                'pembeli',
+                'customer_id',
                 'penjualan_kode',
                 'penjualan_tanggal',
                 'status',
@@ -47,15 +50,41 @@ class PenjualanController extends Controller
             ->addColumn('user_nama', function ($stok) {
                 return $stok->user->nama ?? '-';
             })
+            ->addColumn('customer_nama', function ($stok) {
+                return $stok->customer->nama;
+            })
+            ->addColumn('customer_wa', function ($stok) {
+                return '<a href="https://wa.me/' . $stok->customer->wa . '" target="_blank" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+                </svg>
+            ' . $stok->customer->wa . '</a>';
+            })
+            ->addColumn('penjualan_tanggal', function ($row) {
+                return \Carbon\Carbon::parse($row->tanggal)
+                    ->locale('id')
+                    ->translatedFormat('d F Y - H:i');
+            })
             ->addColumn('total_harga', function ($row) {
                 return number_format($row->total_harga ?? 0, 0, ',', '.');
             })
             ->addColumn('aksi', function ($row) {
-                $btn = '<button onclick="modalAction(\'' . url('/penjualan/' . $row->penjualan_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/penjualan/' . $row->penjualan_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>';
+                $btn = "";
+
+                if ($row->status != 'rejected') {
+
+                    $btn .= '<button onclick="onValidatePayment(' . $row->penjualan_id . ')" class="btn btn-success btn-sm"><i class="fa fa-check"></i></button> ';
+                    $btn .= '<button onclick="onReject(' . $row->penjualan_id . ')" class="btn btn-danger btn-sm mr-3"><i class="fa fa-times"></i></button> ';
+
+                    $btn .= '<button onclick="modalAction(\'' . url('/pesanan/' . $row->penjualan_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm"><i class="fa fa-eye"></i></button> ';
+                }
+
+                $btn .= '<button onclick="modalAction(\'' . url('/pesanan/' . $row->penjualan_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>';
+
+                $btn .= '<a target="_blank" href="/pesanan/' . $row->penjualan_id . '/print_struk" class="btn btn-primary btn-sm mx-1"><i class="fa fa-file"></i></a>';
                 return $btn;
             })
-            ->rawColumns(['aksi'])
+            ->rawColumns(['aksi', 'customer_wa'])
             ->make(true);
     }
 
@@ -63,7 +92,8 @@ class PenjualanController extends Controller
     public function create_ajax()
     {
         $barangs = BarangModel::all();
-        return view('penjualan.create_ajax', compact('barangs'));
+        $customers = CustomerModel::all();
+        return view('pesanan.create_ajax', compact('barangs', 'customers'));
     }
 
     public function store_ajax(Request $request)
@@ -74,13 +104,14 @@ class PenjualanController extends Controller
 
         $rules = [
             'user_id' => 'required|exists:m_user,user_id',
-            'pembeli' => 'required|string|max:100',
+            'customer_id' => 'required|exists:m_user,user_id',
             'penjualan_kode' => 'required|string|unique:t_penjualan,penjualan_kode',
             'penjualan_tanggal' => 'required|date',
             'barang_id.*' => 'required|exists:m_barang,barang_id',
             'harga.*' => 'required|numeric|min:0',
             'jumlah.*' => 'required|integer|min:1'
         ];
+
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -91,28 +122,29 @@ class PenjualanController extends Controller
             ]);
         }
 
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
+
             $penjualan = PenjualanModel::create([
                 'user_id' => auth()->user()->user_id,
-                'pembeli' => $request->pembeli,
+                'customer_id' => $request->customer_id,
                 'penjualan_kode' => $request->penjualan_kode,
-                'penjualan_tanggal' => $request->penjualan_tanggal
+                'penjualan_tanggal' => $request->penjualan_tanggal,
+                'status' => 'validation_payment'
             ]);
 
-            foreach ($request->barang_id as $i => $barangId) {
-                $barang = BarangModel::find($barangId);
-                $barang->update([
-                    'stok' => $barang->stok - $request->jumlah[$i]
-                ]);
 
-                PenjualanDetailModel::create([
+            $dataDetail = [];
+            foreach ($request->barang_id as $i => $barangId) {
+                $dataDetail[] = [
                     'penjualan_id' => $penjualan->penjualan_id,
                     'barang_id' => $barangId,
                     'harga' => $request->harga[$i],
                     'jumlah' => $request->jumlah[$i]
-                ]);
+                ];
             }
+
+            PenjualanDetailModel::insert($dataDetail);
 
             DB::commit();
             return response()->json(['status' => true, 'message' => 'Data penjualan berhasil disimpan']);
@@ -126,13 +158,13 @@ class PenjualanController extends Controller
     {
         $penjualan = PenjualanModel::with('detail')->findOrFail($id);
         $barangs = BarangModel::all();
-        return view('penjualan.edit_ajax', compact('penjualan', 'barangs'));
+        return view('pesanan.edit_ajax', compact('penjualan', 'barangs'));
     }
 
     public function update_ajax(Request $request, $id)
     {
         $rules = [
-            'pembeli' => 'required|string|max:100',
+            'customer_id' => 'required|exists:m_user,user_id',
             'penjualan_kode' => "required|string|unique:t_penjualan,penjualan_kode,$id,penjualan_id",
             'barang_id.*' => 'required|exists:m_barang,barang_id',
             'harga.*' => 'required|numeric|min:0',
@@ -152,7 +184,7 @@ class PenjualanController extends Controller
         try {
             $penjualan = PenjualanModel::findOrFail($id);
             $penjualan->update([
-                'pembeli' => $request->pembeli,
+                'customer_id' => $request->customer_id,
             ]);
 
             foreach ($request->barang_id as $i => $barangId) {
@@ -189,7 +221,7 @@ class PenjualanController extends Controller
     public function confirm_ajax(string $id)
     {
         $penjualan = PenjualanModel::find($id);
-        return view('penjualan.confirm_ajax', compact('penjualan'));
+        return view('pesanan.confirm_ajax', compact('penjualan'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -238,7 +270,7 @@ class PenjualanController extends Controller
             $sheet->setCellValue('A' . $row, $p->penjualan_id);
             $sheet->setCellValue('B' . $row, $p->penjualan_kode);
             $sheet->setCellValue('C' . $row, $p->penjualan_tanggal);
-            $sheet->setCellValue('D' . $row, $p->pembeli);
+            $sheet->setCellValue('D' . $row, $p->customer_id);
             $sheet->setCellValue('E' . $row, $p->total_harga);
             $sheet->setCellValue('F' . $row, $p->user->nama ?? '');
             $row++;
@@ -286,8 +318,41 @@ class PenjualanController extends Controller
             ->withSum('detail as total_harga', DB::raw('harga * jumlah'))
             ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('penjualan.export_pdf', compact('penjualan'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pesanan.export_pdf', compact('penjualan'));
         $pdf->setPaper('a4', 'portrait');
         return $pdf->stream('Laporan_Penjualan_' . now()->format('Y-m-d_His') . '.pdf');
+    }
+
+    public function print_struk($id)
+    {
+        $penjualan = PenjualanModel::with(['user', 'detail.barang'])
+            ->withSum('detail as total_harga', DB::raw('harga * jumlah'))
+            ->findOrFail($id);
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pesanan.struk_pdf', compact('penjualan'));
+            $pdf->setPaper('A7', 'portrait');
+            return $pdf->stream('Struk_' . now()->format('Ymd_His') . '.pdf');
+
+
+        return $pdf->stream('Struk_' . now()->format('Ymd_His') . '.pdf');
+    }
+
+
+
+
+    public function update_status(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $penjualan = PenjualanModel::findOrFail($request->id);
+            $penjualan->update([
+                'status' => $request->status
+            ]);
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Data berhasil diubah']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

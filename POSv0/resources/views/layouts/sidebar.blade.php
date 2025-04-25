@@ -53,12 +53,17 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ url('/pesanan') }}" class="nav-link {{ $activeMenu == 'pesanan' ? 'active' : '' }} ">
+                    <i class="nav-icon fas fa-clipboard-check"></i>
+                    <p>Pesanan</p>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ url('/penjualan') }}" class="nav-link {{ $activeMenu == 'penjualan' ? 'active' : '' }} ">
                     <i class="nav-icon fas fa-cash-register"></i>
                     <p>Transaksi Penjualan</p>
                 </a>
             </li>
-
             <li class="nav-header"></li>
             <li class="nav-item">
                 <a href="{{ url('/logout') }}" class="nav-link btn btn-danger text-white">

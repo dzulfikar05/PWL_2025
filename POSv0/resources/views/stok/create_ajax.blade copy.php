@@ -77,7 +77,7 @@
                 },
                 supplier_id: {
                     required: true
-                }
+                },
                 keterangan: {
                     required: false
                 }
