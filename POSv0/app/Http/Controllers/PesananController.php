@@ -33,8 +33,6 @@ class PesananController extends Controller
     public function list(Request $request)
     {
         $penjualan = PenjualanModel::with('user', 'customer')
-            ->where('status', '=', 'validation_payment')
-            ->orWhere('status', '=', 'rejected')
             ->select([
                 'penjualan_id',
                 'user_id',
@@ -43,7 +41,21 @@ class PesananController extends Controller
                 'penjualan_tanggal',
                 'status',
                 DB::raw('(SELECT SUM(harga * jumlah) FROM t_penjualan_detail WHERE t_penjualan_detail.penjualan_id = t_penjualan.penjualan_id) as total_harga')
-            ]);
+            ])
+            ->where(function($q){
+                $q->where('status','validation_payment')
+                  ->orWhere('status','rejected');
+            });
+
+
+        if ($request->tahun) {
+            $penjualan->whereYear('penjualan_tanggal', $request->tahun);
+        }
+
+        if ($request->bulan) {
+            $penjualan->whereMonth('penjualan_tanggal', $request->bulan);
+        }
+
 
         return DataTables::of($penjualan)
             ->addIndexColumn()
@@ -158,7 +170,8 @@ class PesananController extends Controller
     {
         $penjualan = PenjualanModel::with('detail')->findOrFail($id);
         $barangs = BarangModel::all();
-        return view('pesanan.edit_ajax', compact('penjualan', 'barangs'));
+        $customers = CustomerModel::all();
+        return view('pesanan.edit_ajax', compact('penjualan', 'barangs', 'customers'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -247,32 +260,47 @@ class PesananController extends Controller
         return redirect('/');
     }
 
-    public function export_excel()
+    public function export_excel(Request $request)
     {
-        $penjualan = PenjualanModel::with(['user', 'detail.barang'])
+        $penjualan = PenjualanModel::with(['user', 'customer', 'detail.barang'])
             ->withSum('detail as total_harga', DB::raw('harga * jumlah'))
+            ->when($request->tahun, function ($query, $tahun) {
+                $query->whereYear('penjualan_tanggal', $tahun);
+            })
+            ->when($request->bulan, function ($query, $bulan) {
+                $query->whereMonth('penjualan_tanggal', $bulan);
+            })
             ->get();
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'ID');
-        $sheet->setCellValue('B1', 'Kode Penjualan');
-        $sheet->setCellValue('C1', 'Tanggal');
-        $sheet->setCellValue('D1', 'Pembeli');
-        $sheet->setCellValue('E1', 'Total Harga');
-        $sheet->setCellValue('F1', 'User Pembuat');
+        // Keterangan filter export
+        $bulanNama = $request->bulan ? \Carbon\Carbon::create()->month($request->bulan)->locale('id')->translatedFormat('F') : 'Semua Bulan';
+        $tahunNama = $request->tahun ?? 'Semua Tahun';
 
-        $row = 2;
+        $sheet->setCellValue('A1', 'Export Data Penjualan Bulan ' . $bulanNama . ' Tahun ' . $tahunNama);
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+
+        // Header kolom utama mulai dari baris ke-3
+        $sheet->setCellValue('A3', 'ID');
+        $sheet->setCellValue('B3', 'Kode Penjualan');
+        $sheet->setCellValue('C3', 'Tanggal');
+        $sheet->setCellValue('D3', 'Pembeli');
+        $sheet->setCellValue('E3', 'Total Harga');
+        $sheet->setCellValue('F3', 'User Pembuat');
+
+        $row = 4;
 
         foreach ($penjualan as $p) {
             // Baris utama penjualan
             $sheet->setCellValue('A' . $row, $p->penjualan_id);
             $sheet->setCellValue('B' . $row, $p->penjualan_kode);
             $sheet->setCellValue('C' . $row, $p->penjualan_tanggal);
-            $sheet->setCellValue('D' . $row, $p->customer_id);
+            $sheet->setCellValue('D' . $row, $p->customer->nama ?? '-');
             $sheet->setCellValue('E' . $row, $p->total_harga);
-            $sheet->setCellValue('F' . $row, $p->user->nama ?? '');
+            $sheet->setCellValue('F' . $row, $p->user->nama ?? '-');
             $row++;
 
             // Header detail barang
@@ -292,8 +320,7 @@ class PesananController extends Controller
                 $row++;
             }
 
-            // Spasi antar penjualan
-            $row++;
+            $row++; // Spasi antar penjualan
         }
 
         foreach (range('A', 'F') as $column) {
@@ -312,15 +339,46 @@ class PesananController extends Controller
     }
 
 
-    public function export_pdf()
+
+    public function export_pdf(Request $request)
     {
+        $tahun = $request->tahun ?? date('Y');
+        $bulan = $request->bulan ?? null;
+
+        $bulanIndonesia = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
+        $bulanNama = $bulan ? ($bulanIndonesia[$bulan] ?? $bulan) : 'Semua Bulan';
+
         $penjualan = PenjualanModel::with(['user', 'detail.barang'])
             ->withSum('detail as total_harga', DB::raw('harga * jumlah'))
+            ->when($request->tahun, function ($q) use ($tahun) {
+                $q->whereYear('penjualan_tanggal', $tahun);
+            })
+            ->when($request->bulan, function ($q) use ($bulan) {
+                $q->whereMonth('penjualan_tanggal', $bulan);
+            })
             ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pesanan.export_pdf', compact('penjualan'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('penjualan.export_pdf', [
+            'penjualan'  => $penjualan,
+            'bulanNama'  => $bulanNama,
+            'tahunNama'  => $tahun,
+        ]);
+
         $pdf->setPaper('a4', 'portrait');
-        return $pdf->stream('Laporan_Penjualan_' . now()->format('Y-m-d_His') . '.pdf');
+        return $pdf->stream('Laporan_Penjualan_' . now()->format('Ymd_His') . '.pdf');
     }
 
     public function print_struk($id)
@@ -329,9 +387,9 @@ class PesananController extends Controller
             ->withSum('detail as total_harga', DB::raw('harga * jumlah'))
             ->findOrFail($id);
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pesanan.struk_pdf', compact('penjualan'));
-            $pdf->setPaper('A7', 'portrait');
-            return $pdf->stream('Struk_' . now()->format('Ymd_His') . '.pdf');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pesanan.struk_pdf', compact('penjualan'));
+        $pdf->setPaper('A7', 'portrait');
+        return $pdf->stream('Struk_' . now()->format('Ymd_His') . '.pdf');
 
 
         return $pdf->stream('Struk_' . now()->format('Ymd_His') . '.pdf');

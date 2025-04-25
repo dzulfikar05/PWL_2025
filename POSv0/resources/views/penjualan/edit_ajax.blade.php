@@ -19,7 +19,7 @@
         <div id="modal-master" class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Data Penjualan</h5>
+                    <h5 class="modal-title">Detail Data Penjualan</h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -33,8 +33,13 @@
                         <input value="{{ $penjualan->penjualan_tanggal }}" type="text" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Nama Pembeli</label>
-                        <input value="{{ $penjualan->pembeli }}" type="text" name="pembeli" class="form-control" required>
+                        <label>Pembeli</label>
+                        <select name="customer_id" class="form-control" required>
+                            <option value="">-- Pilih --</option>
+                            @foreach($customers as $row)
+                                <option value="{{ $row->user_id }}" {{ $row->user_id == $penjualan->customer_id ? 'selected' : '' }}>{{ $row->nama }} - {{ $row->wa }}</option>
+                            @endforeach
+                        </select>
                         <small id="error-pembeli" class="error-text text-danger"></small>
                     </div>
 
@@ -78,8 +83,11 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
+                    <button type="button" data-dismiss="modal" class="btn btn-warning">Batal </button>
+
+                    @if ($penjualan->status != 'completed')
                     <button type="submit" class="btn btn-primary">Simpan</button>
+                    @endif
                 </div>
             </div>
         </div>

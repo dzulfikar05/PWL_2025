@@ -167,6 +167,9 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}/delete_ajax', [PenjualanController::class, 'delete_ajax']);
             Route::get('/export_excel', [PenjualanController::class, 'export_excel']);
             Route::get('/export_pdf', [PenjualanController::class, 'export_pdf']);
+
+            Route::post('/{id}/update_status', [PesananController::class, 'update_status']);
+            Route::get('/{id}/print_struk', [PesananController::class, 'print_struk']);
         });
 
         Route::group(['prefix' => 'pesanan'], function () {

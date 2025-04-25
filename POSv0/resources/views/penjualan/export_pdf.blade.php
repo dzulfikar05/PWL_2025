@@ -81,24 +81,13 @@
 </head>
 
 <body>
-    <table class="border-bottom-header">
-        <tr>
-            <td width="15%" class="text-center">
-                <img src="{{ public_path('polinema-bw.png') }}" class="image">
-            </td>
-            <td width="85%">
-                <span class="text-center d-block font-11 font-bold mb-1">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI</span>
-                <span class="text-center d-block font-13 font-bold mb-1">POLITEKNIK NEGERI MALANG</span>
-                <span class="text-center d-block font-10">Jl. Soekarno-Hatta No. 9 Malang 65141</span>
-                <span class="text-center d-block font-10">Telepon (0341) 404424 Pes. 101-105, 0341-404420, Fax. (0341) 404420</span>
-                <span class="text-center d-block font-10">Laman: www.polinema.ac.id</span>
-            </td>
-        </tr>
-    </table>
+
 
     <h3 class="text-center mt-1">LAPORAN DATA PENJUALAN</h3>
 
+
     @foreach ($penjualan as $p)
+    <div style="margin-bottom: 20px">
         <table class="border-all mb-1 font-11">
             <thead>
                 <tr>
@@ -115,7 +104,7 @@
                     <td class="text-center">{{ $p->penjualan_id }}</td>
                     <td>{{ $p->penjualan_kode }}</td>
                     <td>{{ $p->penjualan_tanggal }}</td>
-                    <td>{{ $p->pembeli }}</td>
+                    <td>{{ $p->customer->nama }}</td>
                     <td class="text-right">{{ number_format($p->total_harga ?? 0, 0, ',', '.') }}</td>
                     <td>{{ $p->user->nama ?? '-' }}</td>
                 </tr>
@@ -146,6 +135,8 @@
                 </tbody>
             </table>
         @endif
+    </div>
+
     @endforeach
 
 </body>

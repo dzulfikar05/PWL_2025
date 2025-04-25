@@ -28,6 +28,45 @@
 
         </div>
         <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-2">
+                    <select id="filter_tahun" class="form-control">
+                        <option value="">Semua Tahun</option>
+                        @for ($year = date('Y'); $year >= 2020; $year--)
+                            <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>
+                                {{ $year }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="filter_bulan" class="form-control">
+                        <option value="">Semua Bulan</option>
+                        @php
+                            $bulanIndonesia = [
+                                1 => 'Januari',
+                                2 => 'Februari',
+                                3 => 'Maret',
+                                4 => 'April',
+                                5 => 'Mei',
+                                6 => 'Juni',
+                                7 => 'Juli',
+                                8 => 'Agustus',
+                                9 => 'September',
+                                10 => 'Oktober',
+                                11 => 'November',
+                                12 => 'Desember',
+                            ];
+                            $currentMonth = date('m');
+                        @endphp
+                        @foreach ($bulanIndonesia as $num => $nama)
+                            <option value="{{ sprintf('%02d', $num) }}" {{ $num == $currentMonth ? 'selected' : '' }}>
+                                {{ $nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+            </div>
             @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -64,6 +103,12 @@
 
 @push('js')
     <script>
+
+        $('#filter_tahun, #filter_bulan').on('change', function() {
+            tablePesanan.ajax.reload();
+        });
+
+
         function modalAction(url = '') {
             $('#myModal').load(url, function() {
                 $('#myModal').modal('show');
@@ -147,6 +192,7 @@
                 }
             })
         }
+
         function onUpdateReject(id) {
             $.ajax({
                 url: `{{ url('/pesanan/${id}/update_status') }}`,
@@ -190,7 +236,8 @@
                     dataType: "json",
                     type: "POST",
                     data: function(d) {
-                        d.level_id = $('#level_id').val(); // jika pakai filter
+                        d.tahun = $('#filter_tahun').val();
+                        d.bulan = $('#filter_bulan').val();
                     }
                 },
                 columns: [{
