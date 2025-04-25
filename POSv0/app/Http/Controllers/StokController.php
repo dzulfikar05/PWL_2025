@@ -8,6 +8,7 @@ use App\Models\UserModel;
 use App\Models\SupplierModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
@@ -121,7 +122,7 @@ class StokController extends Controller
                 $data = [
                     'item' => $item,
                     'stok_jumlah' => $jumlahs[$i],
-                    'stok_tanggal' => $tanggal.date(' H:i:s'),
+                    'stok_tanggal' => $tanggal . date(' H:i:s'),
                     'supplier_id' => $suppliers[$i],
                     'harga_total' => $hargas[$i] ?? '',
                     'keterangan' => $keterangans[$i] ?? '',
@@ -295,21 +296,52 @@ class StokController extends Controller
         return redirect('/');
     }
 
-    public function export_excel()
+    public function export_excel(Request $request)
     {
-        $stok = StokModel::with(['user', 'supplier'])->get();
+        $stok = StokModel::with(['user', 'supplier'])
+            ->when($request->tahun, function ($query, $tahun) {
+                $query->whereYear('stok_tanggal', $tahun);
+            })
+            ->when($request->bulan, function ($query, $bulan) {
+                $query->whereMonth('stok_tanggal', $bulan);
+            })->get();
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'Item');
-        $sheet->setCellValue('C1', 'User');
-        $sheet->setCellValue('D1', 'Tanggal');
-        $sheet->setCellValue('E1', 'Jumlah');
-        $sheet->setCellValue('F1', 'Supplier');
+        // Mapping nama bulan
+        $bulanIndonesia = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
 
-        $row = 2;
+        $tahun = $request->tahun ?? 'Semua';
+        $bulan = $request->bulan ? ($bulanIndonesia[$request->bulan] ?? $request->bulan) : 'Semua';
+
+        // Tambahan keterangan
+        $sheet->setCellValue('A1', "Data Stok Tahun: $tahun");
+        $sheet->setCellValue('A2', "Bulan: $bulan");
+
+        // Header
+        $sheet->setCellValue('A4', 'No');
+        $sheet->setCellValue('B4', 'Item');
+        $sheet->setCellValue('C4', 'User');
+        $sheet->setCellValue('D4', 'Tanggal');
+        $sheet->setCellValue('E4', 'Jumlah');
+        $sheet->setCellValue('F4', 'Supplier');
+
+        // Data dimulai dari baris ke-5
+        $row = 5;
         foreach ($stok as $index => $s) {
             $sheet->setCellValue('A' . $row, $index + 1);
             $sheet->setCellValue('B' . $row, $s->item ?? '');
@@ -335,12 +367,81 @@ class StokController extends Controller
         exit;
     }
 
-    public function export_pdf()
+    public function export_pdf(Request $request)
     {
-        $stok = StokModel::with(['user', 'supplier'])->get();
+        $stok = StokModel::with(['user', 'supplier'])
+            ->when($request->tahun, function ($query, $tahun) {
+                $query->whereYear('stok_tanggal', $tahun);
+            })
+            ->when($request->bulan, function ($query, $bulan) {
+                $query->whereMonth('stok_tanggal', $bulan);
+            })->get();
 
-        $pdf = Pdf::loadView('stok.export_pdf', compact('stok'));
+        $bulanIndonesia = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
+
+        $tahun = $request->tahun ?? 'Semua';
+        $bulan = $request->bulan ? ($bulanIndonesia[$request->bulan] ?? $request->bulan) : 'Semua';
+
+        $pdf = Pdf::loadView('stok.export_pdf', compact('stok', 'tahun', 'bulan'));
         $pdf->setPaper('a4', 'portrait');
         return $pdf->stream('Data_Stok_' . now()->format('Y-m-d_His') . '.pdf');
+    }
+
+
+    public function rekap_per_bulan(Request $request)
+    {
+        $tahun = $request->tahun ?? date('Y');
+
+        $bulanIndonesia = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $stokPerBulan = StokModel::selectRaw('
+            MONTH(stok_tanggal) as bulan,
+            SUM(stok_jumlah) as total_jumlah,
+            SUM(stok_jumlah * harga_total) as total_harga
+        ')
+            ->whereYear('stok_tanggal', $tahun)
+            ->groupByRaw('MONTH(stok_tanggal)')
+            ->get()
+            ->keyBy('bulan');
+
+        $data = [];
+        foreach ($bulanIndonesia as $bulan => $namaBulan) {
+            $item = $stokPerBulan->get($bulan);
+
+            $data[] = [
+                'bulan' => $bulan,
+                'bulan_nama' => $namaBulan,
+                'total_jumlah' => $item->total_jumlah ?? 0,
+                'total_harga' => $item->total_harga ?? 0,
+            ];
+        }
+
+        return response()->json($data);
     }
 }

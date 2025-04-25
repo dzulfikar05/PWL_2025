@@ -1,7 +1,6 @@
 @extends('layouts.template')
 
 @section('content')
-
     <div class="card card-outline card-primary">
         <div class="card-header">
             <h3 class="card-title">{{ $page->title }}</h3>
@@ -16,10 +15,10 @@
                             <button class="dropdown-item" onclick="modalAction('{{ url('/stok/import') }}')">
                                 Import Stok
                             </button>
-                            <a class="dropdown-item" href="{{ url('/stok/export_excel') }}">
+                            <a class="dropdown-item" id="exportExcelUrl" href="{{ url('/stok/export_excel') }}">
                                 <i class="fa fa-file-excel"></i> Export to Excel
                             </a>
-                            <a class="dropdown-item" href="{{ url('/stok/export_pdf') }}" target="_blank">
+                            <a class="dropdown-item" id="exportPdfUrl" href="{{ url('/stok/export_pdf') }}" target="_blank">
                                 <i class="fa fa-file-pdf"></i> Export to PDF
                             </a>
                         </div>
@@ -71,9 +70,11 @@
 
             </div>
             <div class="mb-3">
-                <div id="total_harga" class="d-flex justify-content-start align-items-center p-3 col-2
+                <div id="total_harga"
+                    class="d-flex justify-content-start align-items-center p-3 col-2
                     bg-white border border-primary rounded shadow-sm text-primary font-weight-bold
-                    h5" style="transition: all 0.3s ease;">
+                    h5"
+                    style="transition: all 0.3s ease;">
                     Total Harga: Rp 0
                 </div>
             </div>
@@ -100,6 +101,25 @@
             </table>
         </div>
     </div>
+    <div class="card mt-4 card-outline card-primary col-md-6">
+        <div class="card-header">
+            <h5 class="mb-0">Rekap Pengeluaran per Bulan (Tahun <span id="rekap_tahun_text">{{ date('Y') }}</span>)
+            </h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-sm" id="table_pengeluaran_bulanan">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th>Bulan</th>
+                        <th>Total Harga</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
     <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static"
         data-keyboard="false" data-width="75%" aria-hidden="true">
     </div>
@@ -110,9 +130,38 @@
 
 @push('js')
     <script>
+        $(() => {
+            updateExportLinks();
+            fetchRekapBulanan($('#filter_tahun').val());
+        })
+
         $('#filter_tahun, #filter_bulan').on('change', function() {
             tableStok.ajax.reload();
+            updateExportLinks();
         });
+
+
+        $('#filter_tahun').on('change', function() {
+            fetchRekapBulanan($(this).val());
+        });
+
+        function updateExportLinks() {
+            const tahun = $('#filter_tahun').val();
+            const bulan = $('#filter_bulan').val();
+
+            let baseExcelUrl = "{{ url('/stok/export_excel') }}";
+            let basePdfUrl = "{{ url('/stok/export_pdf') }}";
+
+            let queryParams = [];
+            if (tahun) queryParams.push(`tahun=${tahun}`);
+            if (bulan) queryParams.push(`bulan=${bulan}`);
+
+            let queryString = queryParams.length ? '?' + queryParams.join('&') : '';
+
+            $('#exportExcelUrl').attr('href', baseExcelUrl + queryString);
+            $('#exportPdfUrl').attr('href', basePdfUrl + queryString);
+        }
+
 
         function modalAction(url = '') {
             $('#myModal').load(url, function() {
@@ -221,9 +270,48 @@
                         return a + b;
                     }, 0);
 
-                    $('#total_harga').text('Total Harga: Rp ' + new Intl.NumberFormat('id-ID').format(totalHarga));
+                    $('#total_harga').text('Total Harga: Rp ' + new Intl.NumberFormat('id-ID').format(
+                        totalHarga));
                 }
             });
         });
+
+
+        function fetchRekapBulanan(tahun) {
+            $.ajax({
+                url: "{{ url('/stok/rekap_per_bulan') }}",
+                method: "GET",
+                data: {
+                    tahun
+                },
+                success: function(res) {
+                    let tbody = '';
+                    let grandTotal = 0;
+
+                    res.forEach((row, index) => {
+                        let totalHarga = parseFloat(row.total_harga);
+                        grandTotal += totalHarga;
+
+                        tbody += `
+                            <tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td>${row.bulan_nama}</td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(totalHarga)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    tbody += `
+                        <tr class="font-weight-bold bg-light">
+                            <td colspan="2" class="text-center">Grand Total</td>
+                            <td>Rp ${new Intl.NumberFormat('id-ID').format(grandTotal)}</td>
+                        </tr>
+                    `;
+
+                    $('#table_pengeluaran_bulanan tbody').html(tbody);
+                    $('#rekap_tahun_text').text(tahun || '{{ date('Y') }}');
+                }
+            });
+        }
     </script>
 @endpush

@@ -150,6 +150,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/import_ajax', [StokController::class, 'import_ajax']);
             Route::get('/export_excel', [StokController::class, 'export_excel']);
             Route::get('/export_pdf', [StokController::class, 'export_pdf']);
+            Route::get('/rekap_per_bulan', [StokController::class, 'rekap_per_bulan']);
+
         });
 
         Route::group(['prefix' => 'penjualan'], function () {
