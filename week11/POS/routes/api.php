@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/register-api', RegisterController::class)->name('register-api');
+Route::post('/register1', RegisterController::class)->name('register1');
 Route::post('/login-api', LoginController::class)->name('login-api');
 Route::post('/logout-api', LogoutController::class)->name('logout-api');
 
