@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
@@ -28,6 +29,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [WelcomeController::class, 'index']);
 
     Route::middleware(['authorize:ADM'])->group(function () {
+        Route::group(['prefix' => 'dashboard'], function () {
+            Route::get('/', [DashboardController::class, 'index']);
+            Route::post('/getCardData', [DashboardController::class, 'getCardData']);
+            Route::post('/getChartData', [DashboardController::class, 'getChartData']);
+        });
         // Route::group(['prefix' => 'user'], function () {
         //     Route::get('/', [UserController::class, 'index']);
         //     Route::post('/list', [UserController::class, 'list']);
