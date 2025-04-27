@@ -53,6 +53,27 @@
                         </div>
                         <small id="error-password" class="error-text text-danger"></small>
                     </div>
+                    <div class="form-group">
+                        <select name="jk" id="jk" class="form-control" required placeholder="Jenis Kelamin">
+
+                            <option value="male">Laki-laki
+                            </option>
+                            <option value="female">Perempuan
+                            </option>
+                        </select>
+                        <small id="error-jk" class="error-text form-text text-danger"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <input  type="text" name="wa" id="wa" class="form-control" placeholder="Whatsapp, ex: 628123456789"
+                            required>
+                        {{-- <small class="form-text text-muted">ex: 628123456789</small> --}}
+                        <small id="error-wa" class="error-text form-text text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="alamat" id="alamat" class="form-control" cols="30" rows="3" placeholder="Alamat"></textarea>
+                        <small id="error-alamat" class="error-text form-text text-danger"></small>
+                    </div>
                     <div class="row">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary btn-block">Register</button>
@@ -89,6 +110,15 @@
                         required: true,
                         minlength: 4,
                         maxlength: 20
+                    },
+                    jk: {
+                        required: true,
+                    },
+                    alamat: {
+                        required: true,
+                    },
+                    wa: {
+                        required: true,
                     },
                     password: {
                         required: true,

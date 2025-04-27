@@ -81,6 +81,9 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'username' => 'required|string|max:255|unique:m_user',
                 'password' => 'required|string|min:6',
+                'jk' => 'required',
+                'alamat' => 'required|string',
+                'wa' => 'required|integer',
             ]);
 
             // Cari ID level CUS
@@ -96,15 +99,39 @@ class AuthController extends Controller
                 'level_id' => $cusLevel->level_id,
                 'username' => $request->username,
                 'nama' => $request->name,
+                'jk' => $request->jk,
+                'alamat' => $request->alamat,
+                'wa' => $request->wa,
                 'password' => $request->password,
             ]);
 
             if ($user) {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Registrasi Berhasil',
-                    'redirect' => url('login'),
-                ]);
+                $credentials = $request->only('username', 'password');
+
+                if (Auth::attempt($credentials)) {
+
+                    $levelId = Auth::user()->level_id;
+
+                    if($levelId == 1){
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Registrasi Berhasil',
+                            'redirect' => url('/dashboard')
+                        ]);
+                    }else{
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Registrasi Berhasil',
+                            'redirect' => url('/')
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Registrasi Berhasil',
+                        'redirect' => url('login'),
+                    ]);
+                }
             } else {
                 return response()->json([
                     'status' => false,

@@ -68,6 +68,9 @@ class CustomerController extends Controller
                 'username' => 'required|string|min:3|unique:m_user,username',
                 'nama' => 'required|string|max:100',
                 'password' => 'required|min:6',
+                'jk' => 'required',
+                'alamat' => 'required|string',
+                'wa' => 'required|integer',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ];
 
