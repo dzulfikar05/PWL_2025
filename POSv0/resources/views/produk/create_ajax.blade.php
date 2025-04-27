@@ -1,4 +1,4 @@
-    <form action="{{ url('/produk/ajax') }}" method="POST" id="form-tambah">
+    <form action="{{ url('/produk/ajax') }}" method="POST" id="form-tambah" enctype="multipart/form-data">
         @csrf
         <div id="modal-master" class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -36,7 +36,11 @@
                             required>
                         <small id="error-harga" class="error-text form-text text-danger"></small>
                     </div>
-
+                    <div class="form-group">
+                        <label>Gambar</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                        <small id="error-image" class="error-text form-text text-danger"></small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
@@ -47,6 +51,11 @@
     </form>
     <script>
         $(document).ready(function() {
+            $.validator.addMethod('filesize', function(value, element, param) {
+                if (element.files.length == 0) return true;
+                return this.optional(element) || (element.files[0].size <= param);
+            }, 'Ukuran file maksimal 2 MB');
+
             $("#form-tambah").validate({
                 rules: {
                     kategori_id: {
@@ -67,12 +76,21 @@
                         required: true,
                         number: true
                     },
+                    image: {
+                        required: false,
+                        extension: "jpg|jpeg|png",
+                        filesize: 2048000
+                    }
                 },
                 submitHandler: function(form) {
+                    let formData = new FormData(form);
+
                     $.ajax({
                         url: form.action,
                         type: form.method,
-                        data: $(form).serialize(),
+                        processData: false,
+                        contentType: false,
+                        data: formData,
                         success: function(response) {
                             if (response.status) {
                                 $('#myModal').modal('hide');

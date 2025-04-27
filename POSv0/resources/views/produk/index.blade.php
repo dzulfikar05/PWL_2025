@@ -57,6 +57,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Gambar</th>
                         <th>Kode Produk</th>
                         <th>Nama Produk</th>
                         <th>Harga</th>
@@ -100,6 +101,20 @@
                         width: "5%",
                         orderable: false,
                         searchable: false
+                    },
+                    {
+                        data: "image",
+                        className: "",
+                        width: "10%",
+                        orderable: false,
+                        searchable: false,
+                        render: function(data) {
+                            if (data) {
+                                return `<img src="/storage/uploads/product/${data}" width="75" height="75" style="object-fit: cover"/>`;
+                            } else {
+                                return `<img src="No_Image_Available.jpg" width="75" height="75" style="object-fit: cover"/>`;
+                            }
+                        }
                     },
                     {
                         data: "barang_kode",

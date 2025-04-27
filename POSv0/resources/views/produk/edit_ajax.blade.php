@@ -15,7 +15,7 @@
         </div>
     </div>
 @else
-    <form action="{{ url('/produk/' . $barang->barang_id . '/update_ajax') }}" method="POST" id="form-edit">
+    <form action="{{ url('/produk/' . $barang->barang_id . '/update_ajax') }}" method="POST" id="form-edit" enctype="multipart/form-data">
         @csrf @method('PUT')
         <div id="modal-master" class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -55,6 +55,18 @@
                             class="form-control" required>
                         <small id="error-harga" class="error-text form-text text-danger"></small>
                     </div>
+                    <div class="form-group">
+                        <label>Gambar (opsional)</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Kosongkan jika tidak ingin mengganti foto</small>
+                        <small id="error-image" class="error-text form-text text-danger"></small>
+                    </div>
+                    @if ($barang->image)
+                        <div class="form-group">
+                            <label>Gambar Saat Ini:</label><br>
+                            <img src="{{ asset('/storage/uploads/product/' . $barang->image) }}" width="100" class="img-thumbnail">
+                        </div>
+                    @endif
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
@@ -65,6 +77,11 @@
     </form>
     <script>
         $(document).ready(function() {
+            $.validator.addMethod('filesize', function(value, element, param) {
+                if (element.files.length == 0) return true;
+                return this.optional(element) || (element.files[0].size <= param);
+            }, 'Ukuran file maksimal 2 MB');
+
             $("#form-edit").validate({
                 rules: {
                     kategori_id: {
@@ -85,13 +102,20 @@
                         required: true,
                         number: true
                     },
-
+                    image: {
+                        required: false,
+                        extension: "jpg|jpeg|png",
+                        filesize: 2048000
+                    }
                 },
                 submitHandler: function(form) {
+                    let formData = new FormData(form);
                     $.ajax({
                         url: form.action,
                         type: form.method,
-                        data: $(form).serialize(),
+                        data: formData,
+                        contentType: false,
+                        processData: false,
                         success: function(response) {
                             if (response.status) {
                                 $('#myModal').modal('hide');

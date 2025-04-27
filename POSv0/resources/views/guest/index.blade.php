@@ -66,7 +66,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#" id="profile-dropdown">
                             <div class="user-profile">
-                                @if($auth->photo)
+                                @if($auth?->photo != null)
                                 <img src="/storage/uploads/photo/{{ $auth->photo }}" alt="User Profile">
                                 @else
                                 <img src="/userNoImage.webp" alt="User Profile">

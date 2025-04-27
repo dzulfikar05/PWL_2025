@@ -6,6 +6,7 @@ use App\Models\BarangModel;
 use App\Models\KategoriModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yajra\DataTables\Facades\DataTables;
@@ -63,6 +64,7 @@ class BarangController extends Controller
                 'barang_kode' => ['required', 'min:3', 'max:20', 'unique:m_barang,barang_kode'],
                 'barang_nama' => ['required', 'string', 'max:100'],
                 'harga' => ['required', 'numeric'],
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -74,7 +76,19 @@ class BarangController extends Controller
                 ]);
             }
 
-            BarangModel::create($request->all());
+            $imageName = null;
+            $params = $request->all();
+            if ($request->hasFile('image')) {
+
+                $file = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('public/uploads/product', $filename);
+                unset($params['image']);
+                $imageName = $filename;
+                $params['image'] = $imageName;
+            }
+
+            BarangModel::create($params);
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil disimpan'
@@ -98,6 +112,7 @@ class BarangController extends Controller
                 'barang_kode' => ['required', 'min:3', 'max:20', 'unique:m_barang,barang_kode, ' . $id . ',barang_id'],
                 'barang_nama' => ['required', 'string', 'max:100'],
                 'harga' => ['required', 'numeric'],
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -109,8 +124,25 @@ class BarangController extends Controller
             }
 
             $check = BarangModel::find($id);
+
+            $params = $request->all();
+            if ($request->hasFile('image')) {
+                if ($check->image && Storage::exists('public/uploads/product/' . $check->image)) {
+                    Storage::delete('public/uploads/product/' . $check->image);
+                }
+
+                $file = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('public/uploads/product', $filename);
+                if(isset($params['image'])) unset($params['image']);
+                $params['image'] = $filename;
+            }
+
+            if(isset($params['_token'])) unset($params['_token']);
+            if(isset($params['_method'])) unset($params['_method']);
+
             if ($check) {
-                $check->update($request->all());
+                $check->update($params);
                 return response()->json([
                     'status' => true,
                     'message' => 'Data berhasil diupdate'
