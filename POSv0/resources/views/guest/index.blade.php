@@ -26,7 +26,7 @@
 <body class="hold-transition layout-top-nav">
     <div class="wrapper">
         <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand-md navbar-dark bg-custom-green">
+        <nav class="main-header navbar navbar-expand-md navbar-dark bg-custom-green fixed-top">
             <div class="container">
                 <a href="{{ url('/') }}" class="navbar-brand">
                     <span class="brand-text font-weight-bold">{{ $title ?? 'POS System' }}</span>
@@ -41,7 +41,7 @@
                     <form class="form-inline navbar-search mx-auto my-3">
                         <div class="input-group w-100">
                             <input id="search-input" class="form-control" type="search"
-                                placeholder="Search products, categories..." aria-label="Search">
+                                placeholder="Search products..." aria-label="Search">
                             <i class="fas fa-search search-icon"></i>
                         </div>
                         <div id="search-suggestions">
@@ -53,13 +53,15 @@
                 <!-- Right navbar links -->
                 <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link header-icon" href="#" id="cart-icon">
+                        <a class="nav-link header-icon" href="#" onclick="onShowCart()" id="cart-icon">
                             <i class="fas fa-shopping-cart"></i>
-                            <span class="badge">3</span>
+                            @if($cart != null)
+                                <span class="badge cart-count"></span>
+                            @endif
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link header-icon" href="#" id="history-icon">
+                        <a class="nav-link header-icon" href="#" onclick="onShowHistory()" id="history-icon">
                             <i class="fas fa-history"></i>
                         </a>
                     </li>
@@ -94,8 +96,9 @@
             </div>
         </nav>
 
+
         <!-- Hero Section -->
-        <div id="hero-carousel" class="carousel slide" data-ride="carousel">
+        <div id="hero-carousel" class="carousel slide " style="margin-top: 100px" data-ride="carousel">
             <ol class="carousel-indicators">
                 <li data-target="#hero-carousel" data-slide-to="0" class="active"></li>
                 <li data-target="#hero-carousel" data-slide-to="1"></li>
@@ -169,72 +172,31 @@
         <div class="content-wrapper bg-white">
             <div class="content">
                 <div class="container py-5">
-                    <h2 class="text-center mb-5">Features</h2>
+                    <h2 class="text-center mb-5">Daftar Produk</h2>
+
                     <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-cash-register text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Quick Sales</h5>
-                                    <p class="card-text">Process transactions quickly and efficiently with our
-                                        intuitive
-                                        interface.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-chart-line text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Sales Analytics</h5>
-                                    <p class="card-text">Get detailed insights into your business performance with
-                                        advanced reporting.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-box text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Inventory Management</h5>
-                                    <p class="card-text">Keep track of your stock levels and get alerts when items are
-                                        running low.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-4">
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-users text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Customer Management</h5>
-                                    <p class="card-text">Build customer loyalty with profiles, purchase history, and
-                                        targeted promotions.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-mobile-alt text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Mobile Friendly</h5>
-                                    <p class="card-text">Access your POS system from any device, anywhere, anytime.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card feature-card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-shield-alt text-success fa-3x mb-3"></i>
-                                    <h5 class="card-title">Secure Payments</h5>
-                                    <p class="card-text">Process payments securely with multiple payment options and
-                                        encryption.</p>
-                                </div>
-                            </div>
+                        <div class="col-md-4 offset-md-4 mb-4">
+                            <select id="categoryFilter" class="form-control" onchange="getProductData()">
+                                <option value="">Semua Kategori</option>
+                                @foreach($kategori as $cat)
+                                    <option value="{{ $cat->kategori_id }}">{{ $cat->kategori_nama }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
 
+                    <div id="loading" class="text-center my-5" style="display: none;">
+                        <i class="fas fa-spinner fa-spin fa-3x text-warning"></i>
+                      </div>
+
+
+                    <div class="row product-list" >
+                    </div>
+
+                    <nav aria-label="Page navigation">
+                        <ul id="pagination" class="pagination justify-content-center mt-5">
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -264,15 +226,25 @@
     </div>
     <!-- ./wrapper -->
 
-    @include('guest.profile')
+
     <!-- Scripts -->
     <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
      <!-- SweetAlert2 -->
      <script src="{{ asset('adminlte/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+    <script>
+         $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+       @include('guest.profile')
+       @include('guest.cart')
+       @include('guest.history')
+       @include('guest.script')
 
-    @include('guest.script')
 </body>
 
 </html>

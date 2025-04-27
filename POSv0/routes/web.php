@@ -26,10 +26,19 @@ Route::post('register', [AuthController::class, 'postRegister']);
 
 Route::get('/', [WelcomeController::class, 'index']);
 
+Route::group(['prefix' => 'guest'], function () {
+    Route::post('/banner', [WelcomeController::class, 'banner']);
+    Route::post('/product', [WelcomeController::class, 'product']);
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::middleware(['authorize:CUS'])->group(function () {
         Route::group(['prefix' => 'public'], function () {
             Route::put('/{id}/update_profile', [CustomerController::class, 'update_ajax']);
+            Route::post('/add_cart', [WelcomeController::class, 'add_cart']);
+            Route::post('/update_cart', [WelcomeController::class, 'update_cart']);
+            Route::post('/checkout', [WelcomeController::class, 'checkout']);
+            Route::post('/history', [WelcomeController::class, 'history']);
         });
     });
 
