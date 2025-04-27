@@ -107,7 +107,7 @@
                                 return `<img src="/storage/uploads/photo/${data}" width="75" height="75" style="object-fit: cover" class="rounded-circle"/>`;
 
                             }else{
-                                return `<img src="userNoImage.png" width="75" height="75" style="object-fit: cover" class="rounded-circle"/>`;
+                                return `<img src="userNoImage.webp" width="75" height="75" style="object-fit: cover" class="rounded-circle"/>`;
                             }
                         }
                     },

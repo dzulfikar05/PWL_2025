@@ -177,7 +177,6 @@ class CustomerController extends Controller
             if(isset($params['_method'])) unset($params['_method']);
 
             CustomerModel::where('user_id', $id)->update($params);
-
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil diupdate'

@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+
 class WelcomeController extends Controller
 {
     public function index()
     {
-        $breadcrumb = (object) [
-            "title" => 'Selamat Datang',
-            "list" => ['Hone', 'Welcone']
-        ];
-        $activeMenu = "dashboard";
-
-        return view("welcome", ["breadcrumb" => $breadcrumb, 'activeMenu' => $activeMenu]);
+        return view("guest.index", [
+            'auth' => Auth::user(),
+            'title' => 'POS v0'
+        ]);
     }
 }

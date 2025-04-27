@@ -16,7 +16,7 @@
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="card card-outline card-primary">
-            <div class="card-header text-center"><a href="{{ url('/') }}" class="h1"><b>Admin</b>LTE</a></div>
+            <div class="card-header text-center"><a href="{{ url('/') }}" class="h1"><b>Point</b> of Sale</a></div>
             <div class="card-body">
                 <p class="login-box-msg">Sign in to start your session</p>
                 <form action="{{ url('login') }}" method="POST" id="form-login">
@@ -42,18 +42,18 @@
                         <small id="error-password" class="error-text text-danger"></small>
                     </div>
                     <div class="row">
-                        <div class="col-8">
+                        {{-- <div class="col-8">
                             <div class="icheck-primary">
                                 <input type="checkbox" id="remember"><label for="remember">Remember Me</label>
                             </div>
-                        </div>
-                        <div class="col-4">
+                        </div> --}}
+                        <div class="col-12">
                             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                         </div>
                         </div>
                 </form>
                 <p class="mt-3 mb-1">
-                    <a href="{{ url('register') }}">Register a new membership</a>
+                    Dont have an account? <a href="{{ url('register') }}"> Register</a>
                 </p>
             </div>
             </div>

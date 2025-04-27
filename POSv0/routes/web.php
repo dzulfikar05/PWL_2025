@@ -24,9 +24,14 @@ Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
 Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'postRegister']);
 
-Route::middleware(['auth'])->group(function () {
+Route::get('/', [WelcomeController::class, 'index']);
 
-    Route::get('/', [WelcomeController::class, 'index']);
+Route::middleware(['auth'])->group(function () {
+    Route::middleware(['authorize:CUS'])->group(function () {
+        Route::group(['prefix' => 'public'], function () {
+            Route::put('/{id}/update_profile', [CustomerController::class, 'update_ajax']);
+        });
+    });
 
     Route::middleware(['authorize:ADM'])->group(function () {
         Route::group(['prefix' => 'dashboard'], function () {

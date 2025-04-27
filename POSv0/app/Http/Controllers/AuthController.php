@@ -23,11 +23,24 @@ class AuthController extends Controller
             $credentials = $request->only('username', 'password');
 
             if (Auth::attempt($credentials)) {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Login Berhasil',
-                    'redirect' => url('/')
-                ]);
+
+                $levelId = Auth::user()->level_id;
+
+                if($levelId == 1){
+                    // admin
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Login Berhasil',
+                        'redirect' => url('/dashboard')
+                    ]);
+                }else{
+                    // customer
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Login Berhasil',
+                        'redirect' => url('/')
+                    ]);
+                }
             }
             return response()->json([
                 'status' => false,
@@ -40,11 +53,20 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $levelId = Auth::user()->level_id;
+
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('login');
+
+        if($levelId == 1){
+            // admin
+            return redirect('login');
+        }else{
+            // customer
+            return redirect('/');
+        }
     }
 
     public function register()
