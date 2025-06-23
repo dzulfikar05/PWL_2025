@@ -278,11 +278,11 @@
                         searchable: true
                     },
                     {
-                        data: "status",
+                        data: "status_penjualan",
                         orderable: true,
                         searchable: true,
                         render: function(data) {
-                            if (data == 'validation_payment') {
+                            if (data == 'validate_payment') {
                                 return `<span style="font-size:12px" class="badge badge-warning">Validasi Pembayaran</span>`;
                             } else if (data == 'rejected') {
                                 return `<span style="font-size:12px" class="badge badge-danger">Dibatalkan</span>`;

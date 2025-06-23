@@ -43,9 +43,9 @@ class PesananController extends Controller
                 DB::raw('(SELECT SUM(harga * jumlah) FROM t_penjualan_detail WHERE t_penjualan_detail.penjualan_id = t_penjualan.penjualan_id) as total_harga')
             ])
             ->where(function($q){
-                $q->where('status','validation_payment')
+                $q->where('status','validate_payment')
                   ->orWhere('status','rejected');
-            });
+            })->orderBy('penjualan_tanggal', 'desc');
 
 
         if ($request->tahun) {
@@ -56,14 +56,16 @@ class PesananController extends Controller
             $penjualan->whereMonth('penjualan_tanggal', $request->bulan);
         }
 
-
-        return DataTables::of($penjualan)
+        return DataTables::of($penjualan->get())
             ->addIndexColumn()
             ->addColumn('user_nama', function ($stok) {
                 return $stok->user->nama ?? '-';
             })
             ->addColumn('customer_nama', function ($stok) {
                 return $stok->customer->nama;
+            })
+            ->addColumn('status_penjualan', function ($row) {
+                return $row->status;
             })
             ->addColumn('customer_wa', function ($stok) {
                 return '<a href="https://wa.me/' . $stok->customer->wa . '" target="_blank" class="btn btn-success">
@@ -142,7 +144,7 @@ class PesananController extends Controller
                 'customer_id' => $request->customer_id,
                 'penjualan_kode' => $request->penjualan_kode,
                 'penjualan_tanggal' => $request->penjualan_tanggal,
-                'status' => 'validation_payment'
+                'status' => 'validate_payment'
             ]);
 
 
